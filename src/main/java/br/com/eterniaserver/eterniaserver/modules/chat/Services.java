@@ -18,10 +18,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
-import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.Title.Times;
 
@@ -71,7 +68,7 @@ final class Services {
 
         private final Map<UUID, UUID> tellMap = new ConcurrentHashMap<>();
         private final Map<Integer, UUID> playerHashToUUID = new HashMap<>();
-        private final Map<String, Component> staticComponents = new HashMap<>();
+        private final Map<String, String> staticTags = new HashMap<>();
         private final Times mentionTimes = Times.times(Duration.ofMillis(100), Duration.ofSeconds(1), Duration.ofMillis(100));
         private final Set<UUID> spySet = new HashSet<>();
 
@@ -84,23 +81,16 @@ final class Services {
         private TextReplacementConfig replaceText;
         private boolean muteAllChannels = false;
         private int muteChannelTaskId = 0;
-        private TextColor tagColor;
 
         public CraftChat(EterniaServer plugin) {
             this.plugin = plugin;
             this.tellChannelHashCode = TELL_CHANNEL_STRING.hashCode();
         }
 
-        protected void updateTextColor() {
-            String tagHex = plugin.getString(Strings.CHAT_DEFAULT_TAG_COLOR);
-
-            this.tagColor = TextColor.fromHexString(tagHex);
-        }
-
-        protected TextColor getPlayerDefaultColor(ChatInfo chatInfo, ChannelObject channelObject) {
-            TextColor color = chatInfo.getColor();
+        protected String getPlayerDefaultColor(ChatInfo chatInfo, ChannelObject channelObject) {
+            String color = chatInfo.getChatColor();
             if (color == null) {
-                return TextColor.fromHexString(channelObject.channelColor());
+                return channelObject.channelColor();
             }
 
             return color;
@@ -269,17 +259,21 @@ final class Services {
                 return;
             }
 
-            Component messageComponent = getChatComponentFormat(player, channelObject.format());
+            StringBuilder messageBuilder = new StringBuilder();
+            getChatFormat(messageBuilder, player, channelObject.format());
+
             String messageStr = EterniaLib.getChatCommons().plain(component);
             if (player.hasPermission(plugin.getString(Strings.PERM_CHAT_COLOR))) {
                 messageStr = EterniaLib.getChatCommons().getColor(messageStr);
             }
 
+            messageBuilder.append(EterniaLib.getChatCommons().getColor(getPlayerDefaultColor(chatInfo, channelObject)));
             for (String section : messageStr.split(" ")) {
-                messageComponent = messageComponent.appendSpace().append(getComponent(
-                        section, player, playerProfile, chatInfo, channelObject
-                ));
+                messageBuilder.append(" ");
+                messageBuilder.append(getSection(section, player, playerProfile));
             }
+
+            Component messageComponent = EterniaLib.getChatCommons().deserialize(messageBuilder.toString());
 
             Set<Audience> viewers = event.viewers();
 
@@ -330,102 +324,84 @@ final class Services {
             }
         }
 
-        private Component getComponent(String section,
-                                       Player player,
-                                       PlayerProfile playerProfile,
-                                       ChatInfo chatInfo,
-                                       ChannelObject channelObject) {
+        private String getSection(String section, Player player, PlayerProfile playerProfile) {
             int sectionHashCode = section.toLowerCase().hashCode();
             UUID mentionPlayerUUID = getUUIDFromHash(sectionHashCode);
 
             if (mentionPlayerUUID != null && player.hasPermission(plugin.getString(Strings.PERM_CHAT_MENTION))) {
                 Player mentionPlayer = plugin.getServer().getPlayer(mentionPlayerUUID);
                 if (mentionPlayer != null) {
+                    Title title = Title.title(
+                            EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.CONS_MENTION_TITLE).replace("{0}", playerProfile.getPlayerName()).replace("{1}", playerProfile.getPlayerDisplay())),
+                            EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.CONS_MENTION_SUBTITLE).replace("{0}", playerProfile.getPlayerName()).replace("{1}", playerProfile.getPlayerDisplay())),
+                            mentionTimes
+                    );
                     mentionPlayer.playNote(mentionPlayer.getLocation(), Instrument.PIANO, Note.natural(1, Note.Tone.F));
-                    mentionPlayer.showTitle(Title.title(
-                            EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.CONS_MENTION_TITLE)
-                                    .replace("{0}", playerProfile.getPlayerName())
-                                    .replace("{1}", playerProfile.getPlayerDisplay())
-                            ),
-                            EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.CONS_MENTION_SUBTITLE)
-                                    .replace("{0}", playerProfile.getPlayerName())
-                                    .replace("{1}", playerProfile.getPlayerDisplay())
-                            ), mentionTimes
-                    ));
+                    mentionPlayer.showTitle(title);
                 }
-
-                return Component.text(section).color(tagColor);
+                return "<color:%s>%s</color>".formatted(plugin.getString(Strings.CHAT_DEFAULT_TAG_COLOR), section);
             }
 
             if (player.hasPermission(plugin.getString(Strings.PERM_CHAT_ITEM)) && sectionHashCode == getShowItemHashCode()) {
                 ItemStack itemStack = player.getInventory().getItemInMainHand();
                 if (!itemStack.getType().equals(Material.AIR)) {
-                    return getItemComponent(section, itemStack);
-                }
-            }
-
-            return MiniMessage.miniMessage().deserialize(section).color(getPlayerDefaultColor(chatInfo, channelObject));
-        }
-
-        private	Component getItemComponent(String string, ItemStack itemStack) {
-            final Component component = Component.text(
-                    string.replace(
+                    Component itemComponent = Component.text(section.replace(
                             plugin.getString(Strings.SHOW_ITEM_PLACEHOLDER),
                             plugin.getString(Strings.CONS_SHOW_ITEM)
                                     .replace("{0}", String.valueOf(itemStack.getAmount()))
                                     .replace("{1}", itemStack.getType().toString())
-                    )
-            );
-            return component.hoverEvent(
-                    plugin.getServer().getItemFactory().asHoverEvent(
-                            itemStack,
-                            UnaryOperator.identity()
-                    )
-            ).color(tagColor);
-        }
-
-        private Component getChatComponentFormat(Player player, String format) {
-            Map<Integer, Component> componentMap = new TreeMap<>();
-            for (Map.Entry<String, CustomPlaceholder> entry : customPlaceholdersObjectsMap.entrySet()) {
-                if (format.contains("{" + entry.getKey() + "}") && player.hasPermission(entry.getValue().permission())) {
-                    componentMap.put(entry.getValue().priority(), getJsonTagText(player, entry.getValue()));
+                    ));
+                    return "<color:%s>%s</color>".formatted(
+                            plugin.getString(Strings.CHAT_DEFAULT_TAG_COLOR),
+                            EterniaLib.getChatCommons().serializer(itemComponent.hoverEvent(
+                                    plugin.getServer().getItemFactory().asHoverEvent(itemStack, UnaryOperator.identity())
+                            ))
+                    );
                 }
             }
 
-            Component chatComponentFormat = Component.empty();
-            for (Component component : componentMap.values()) {
-                chatComponentFormat = chatComponentFormat.append(component);
-            }
-
-            return chatComponentFormat;
+            return section;
         }
 
-        private Component getJsonTagText(Player player, CustomPlaceholder object) {
+        private void getChatFormat(StringBuilder message, Player player, String format) {
+            Map<Integer, String> sections = new TreeMap<>();
+            for (Map.Entry<String, CustomPlaceholder> entry : customPlaceholdersObjectsMap.entrySet()) {
+                if (format.contains("{" + entry.getKey() + "}") && player.hasPermission(entry.getValue().permission())) {
+                    sections.put(entry.getValue().priority(), getStringTag(player, entry.getValue()));
+                }
+            }
+
+            for (String section : sections.values()) {
+                message.append(section);
+            }
+        }
+
+        private String getStringTag(Player player, CustomPlaceholder object) {
             if (!object.isStatic()) {
-                return loadComponent(player, object);
+                return loadTag(player, object);
             }
 
             String value = object.value();
-            if (!staticComponents.containsKey(value)) {
-                staticComponents.put(value, loadComponent(player, object));
+            if (!staticTags.containsKey(value)) {
+                staticTags.put(value, loadTag(player, object));
             }
 
-            return staticComponents.get(value);
+            return staticTags.get(value);
         }
 
-        private Component loadComponent(Player player, CustomPlaceholder object) {
-            Component component = object.value().equals("%player_displayname%") ?
-                    player.displayName() :
-                    EterniaLib.getChatCommons().parseColor(plugin.setPlaceholders(player, object.value()));
+        private String loadTag(Player player, CustomPlaceholder object) {
+            String tag = object.value().equals("%player_displayname%") ?
+                    EterniaLib.getChatCommons().serializer(player.displayName()) :
+                    EterniaLib.getChatCommons().getColor(plugin.setPlaceholders(player, object.value()));
 
             if (!object.hoverText().isEmpty()) {
-                component = component.hoverEvent(HoverEvent.showText(EterniaLib.getChatCommons().parseColor(plugin.setPlaceholders(player, object.hoverText()))));
+                tag = "<hover:show_text:'%s'>%s</hover>".formatted(EterniaLib.getChatCommons().getColor(plugin.setPlaceholders(player, object.hoverText())), tag);
             }
             if (!object.suggestCmd().isEmpty()) {
-                component = component.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.SUGGEST_COMMAND, plugin.setPlaceholders(player, object.suggestCmd())));
+                tag = "<click:suggest_command:'%s'>%s</click>".formatted(plugin.setPlaceholders(player, object.suggestCmd()), tag);
             }
 
-            return component.compact();
+            return tag;
         }
 
         protected void clearPlayerName(Player player) {

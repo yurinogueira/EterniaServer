@@ -30,7 +30,7 @@ sonarqube  {
 }
 
 group = "br.com.eterniaserver"
-version = "4.3.0"
+version = "4.3.1"
 
 repositories {
     mavenCentral()
@@ -73,13 +73,13 @@ java {
 
 dependencies {
     compileOnly("io.papermc.paper", "paper-api", "1.20.4-R0.1-SNAPSHOT")
-    compileOnly("br.com.eterniaserver", "eternialib", "4.3.0")
+    compileOnly("br.com.eterniaserver", "eternialib", "4.3.3")
     compileOnly("com.github.MilkBowl", "VaultAPI", "1.7")
     compileOnly("me.clip", "placeholderapi", "2.11.1")
     compileOnly("com.discordsrv", "discordsrv", "1.26.0")
     implementation("org.bstats", "bstats-bukkit", "3.0.0")
     testImplementation("io.papermc.paper", "paper-api", "1.20.4-R0.1-SNAPSHOT")
-    testImplementation("br.com.eterniaserver", "eternialib", "4.3.0")
+    testImplementation("br.com.eterniaserver", "eternialib", "4.3.3")
     testImplementation("com.github.MilkBowl", "VaultAPI", "1.7")
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.9.2")
     testImplementation("org.mockito", "mockito-inline", "5.2.0")

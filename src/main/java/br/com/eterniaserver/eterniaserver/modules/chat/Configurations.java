@@ -485,14 +485,12 @@ final class Configurations {
     static class ChatConfiguration implements ReloadableConfiguration {
 
         private final EterniaServer plugin;
-        private final CraftChat craftChatService;
 
         private final FileConfiguration inFile;
         private final FileConfiguration outFile;
 
-        public ChatConfiguration(EterniaServer plugin, CraftChat craftChatService) {
+        public ChatConfiguration(EterniaServer plugin) {
             this.plugin = plugin;
-            this.craftChatService = craftChatService;
             this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
             this.outFile = new YamlConfiguration();
         }
@@ -542,8 +540,6 @@ final class Configurations {
             strings[Strings.CHAT_TABLE_NAME.ordinal()] = inFile.getString("general.table-name.chat", "e_chat_info");
             strings[Strings.CHAT_DEFAULT_TAG_COLOR.ordinal()] = inFile.getString("general.default-tag-color", "#1594AB");
             strings[Strings.PERM_CHAT_COLOR.ordinal()] = inFile.getString("general.perm.color", "eternia.chat.color");
-
-            craftChatService.updateTextColor();
 
             outFile.set("general.discord-srv", booleans[Booleans.DISCORD_SRV.ordinal()]);
 

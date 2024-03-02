@@ -38,7 +38,7 @@ public class ChatManager implements Module {
         ChatMessages messages = new ChatMessages(plugin.messages());
         ChatCommand commands = new ChatCommand();
         ChatChannels channels = new ChatChannels(craftChatService);
-        ChatConfiguration configuration = new ChatConfiguration(plugin, craftChatService);
+        ChatConfiguration configuration = new ChatConfiguration(plugin);
 
         EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "chat_messages", true, messages);
         EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "chat_commands", true, commands);
