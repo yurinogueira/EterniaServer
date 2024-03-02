@@ -1,8 +1,8 @@
 package br.com.eterniaserver.eterniaserver.modules.glow;
 
 import br.com.eterniaserver.eterniaserver.EterniaServer;
-
 import br.com.eterniaserver.eterniaserver.modules.Constants;
+
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import org.bukkit.Bukkit;

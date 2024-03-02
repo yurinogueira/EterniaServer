@@ -14,6 +14,7 @@ import br.com.eterniaserver.acf.annotation.Subcommand;
 import br.com.eterniaserver.acf.annotation.Syntax;
 import br.com.eterniaserver.acf.bukkit.contexts.OnlinePlayer;
 import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.api.events.AfkStatusEvent;
 import br.com.eterniaserver.eterniaserver.enums.Lists;
@@ -62,48 +63,51 @@ final class Commands {
             if (target != null) {
                 Player targetPlayer = target.getPlayer();
                 if (!player.hasPermission(plugin.getString(Strings.PERM_FLY_OTHER))) {
-                    plugin.sendMiniMessages(player, Messages.SERVER_NO_PERM);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.SERVER_NO_PERM);
                     return;
                 }
 
                 PlayerProfile targetProfile = EterniaLib.getDatabase().get(PlayerProfile.class, targetPlayer.getUniqueId());
+                MessageOptions playerOptions = new MessageOptions(targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
+                MessageOptions targetOptions = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
 
                 if (targetPlayer.getAllowFlight()) {
                     targetPlayer.setAllowFlight(false);
                     targetPlayer.setFlying(false);
-                    plugin.sendMiniMessages(player, Messages.FLY_DISABLED_TO, targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
-                    plugin.sendMiniMessages(targetPlayer, Messages.FLY_DISABLED_BY, playerProfile.getPlayerName(), targetProfile.getPlayerDisplay());
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.FLY_DISABLED_TO, playerOptions);
+                    EterniaLib.getChatCommons().sendMessage(targetPlayer, Messages.FLY_DISABLED_BY, targetOptions);
                     return;
                 }
 
                 targetPlayer.setAllowFlight(true);
                 targetPlayer.setFlying(true);
-                plugin.sendMiniMessages(player, Messages.FLY_ENABLED_TO, targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
-                plugin.sendMiniMessages(targetPlayer, Messages.FLY_ENABLED_BY, playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+
+                EterniaLib.getChatCommons().sendMessage(player, Messages.FLY_ENABLED_TO, playerOptions);
+                EterniaLib.getChatCommons().sendMessage(targetPlayer, Messages.FLY_ENABLED_BY, targetOptions);
                 return;
             }
 
             if (playerProfile.isOnPvP() && !player.hasPermission(plugin.getString(Strings.PERM_FLY_BYPASS))) {
-                plugin.sendMiniMessages(player, Messages.FLY_PVP_BLOCKED);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.FLY_PVP_BLOCKED);
                 return;
             }
 
             String worldName = player.getWorld().getName();
             if (plugin.getStringList(Lists.BLACKLISTED_WORLDS_FLY).contains(worldName) && !player.hasPermission(plugin.getString(Strings.PERM_FLY_BYPASS))) {
-                plugin.sendMiniMessages(player, Messages.FLY_WORLD_BLOCKED);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.FLY_WORLD_BLOCKED);
                 return;
             }
 
             if (player.getAllowFlight()) {
                 player.setAllowFlight(false);
                 player.setFlying(false);
-                plugin.sendMiniMessages(player, Messages.FLY_DISABLED);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.FLY_DISABLED);
                 return;
             }
 
             player.setAllowFlight(true);
             player.setFlying(true);
-            plugin.sendMiniMessages(player, Messages.FLY_ENABLED);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.FLY_ENABLED);
         }
 
         @CommandAlias("%SPEED")
@@ -112,13 +116,14 @@ final class Commands {
         @Description("%SPEED_DESCRIPTION")
         public void onSpeed(Player player, @Default("1") Integer speed) {
             if (speed < 1 || speed > 10) {
-                plugin.sendMiniMessages(player, Messages.SPEED_INVALID);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.SPEED_INVALID);
                 return;
             }
 
             player.setFlySpeed(speed / 10F);
             player.setWalkSpeed(speed / 10F);
-            plugin.sendMiniMessages(player, Messages.SPEED_SETED, String.valueOf(speed));
+            MessageOptions options = new MessageOptions(String.valueOf(speed));
+            EterniaLib.getChatCommons().sendMessage(player, Messages.SPEED_SETED, options);
         }
 
         @CommandCompletion("@players")
@@ -134,13 +139,17 @@ final class Commands {
                 PlayerProfile targetProfile = EterniaLib.getDatabase().get(PlayerProfile.class, target.getUniqueId());
 
                 target.setFoodLevel(20);
-                plugin.sendMiniMessages(player, Messages.FEED_SETED_TO, targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
-                plugin.sendMiniMessages(target, Messages.FEED_SETED_BY, playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+
+                MessageOptions playerOptions = new MessageOptions(targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
+                EterniaLib.getChatCommons().sendMessage(player, Messages.FEED_SETED_TO, playerOptions);
+
+                MessageOptions targetOptions = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+                EterniaLib.getChatCommons().sendMessage(target, Messages.FEED_SETED_BY, targetOptions);
                 return;
             }
 
             player.setFoodLevel(20);
-            plugin.sendMiniMessages(player, Messages.FEED_SETED);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.FEED_SETED);
         }
 
         @CommandAlias("%THOR")
@@ -155,8 +164,12 @@ final class Commands {
                 PlayerProfile targetProfile = EterniaLib.getDatabase().get(PlayerProfile.class, target.getUniqueId());
 
                 target.getWorld().strikeLightning(target.getLocation());
-                plugin.sendMiniMessages(player, Messages.THOR_SETED_TO, targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
-                plugin.sendMiniMessages(target, Messages.THOR_SETED_BY, playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+
+                MessageOptions playerOptions = new MessageOptions(targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
+                EterniaLib.getChatCommons().sendMessage(player, Messages.THOR_SETED_TO, playerOptions);
+
+                MessageOptions targetOptions = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+                EterniaLib.getChatCommons().sendMessage(target, Messages.THOR_SETED_BY, targetOptions);
                 return;
             }
 
@@ -168,7 +181,12 @@ final class Commands {
         @Description("%BROADCAST_DESCRIPTION")
         @CommandPermission("%BROADCAST_PERM")
         public void onBroadcast(@Default("true") Boolean prefix, String message) {
-            plugin.getServer().broadcast(plugin.parseColor(message, prefix));
+            Component component = EterniaLib.getChatCommons().parseColor(message);
+            if (prefix) {
+                MessageOptions options = new MessageOptions(false);
+                component = EterniaLib.getChatCommons().parseMessage(Messages.SERVER_PREFIX, options).append(component);
+            }
+            plugin.getServer().broadcast(component);
         }
 
         @CommandAlias("%MEM")
@@ -176,8 +194,19 @@ final class Commands {
         @Description("%MEM_DESCRIPTION")
         public void onMem(CommandSender sender) {
             runtimeInfo.recalculateRuntime();
-            plugin.sendMiniMessages(sender, Messages.STATS_MEM, String.valueOf(runtimeInfo.getFreemem()), String.valueOf(runtimeInfo.getTotalmem()));
-            plugin.sendMiniMessages(sender, Messages.STATS_HOURS, String.valueOf(runtimeInfo.getDays()), String.valueOf(runtimeInfo.getHours()), String.valueOf(runtimeInfo.getMinutes()), String.valueOf(runtimeInfo.getSeconds()));
+            MessageOptions memOptions = new MessageOptions(
+                    String.valueOf(runtimeInfo.getFreemem()),
+                    String.valueOf(runtimeInfo.getTotalmem())
+            );
+            MessageOptions hoursOptions = new MessageOptions(
+                    String.valueOf(runtimeInfo.getDays()),
+                    String.valueOf(runtimeInfo.getHours()),
+                    String.valueOf(runtimeInfo.getMinutes()),
+                    String.valueOf(runtimeInfo.getSeconds())
+            );
+
+            EterniaLib.getChatCommons().sendMessage(sender, Messages.STATS_MEM, memOptions);
+            EterniaLib.getChatCommons().sendMessage(sender, Messages.STATS_HOURS, hoursOptions);
         }
 
         @CommandAlias("%MEM_ALL")
@@ -185,8 +214,19 @@ final class Commands {
         @Description("%MEM_ALL_DESCRIPTION")
         public void onMemAll(CommandSender sender) {
             runtimeInfo.recalculateRuntime();
-            plugin.getServer().broadcast(plugin.getMiniMessage(Messages.STATS_MEM, true, String.valueOf(runtimeInfo.getFreemem()), String.valueOf(runtimeInfo.getTotalmem())));
-            plugin.getServer().broadcast(plugin.getMiniMessage(Messages.STATS_HOURS, true, String.valueOf(runtimeInfo.getDays()), String.valueOf(runtimeInfo.getHours()), String.valueOf(runtimeInfo.getMinutes()), String.valueOf(runtimeInfo.getSeconds())));
+            MessageOptions memOptions = new MessageOptions(
+                    String.valueOf(runtimeInfo.getFreemem()),
+                    String.valueOf(runtimeInfo.getTotalmem())
+            );
+            MessageOptions hoursOptions = new MessageOptions(
+                    String.valueOf(runtimeInfo.getDays()),
+                    String.valueOf(runtimeInfo.getHours()),
+                    String.valueOf(runtimeInfo.getMinutes()),
+                    String.valueOf(runtimeInfo.getSeconds())
+            );
+
+            plugin.getServer().broadcast(EterniaLib.getChatCommons().parseMessage(Messages.STATS_MEM, memOptions));
+            plugin.getServer().broadcast(EterniaLib.getChatCommons().parseMessage(Messages.STATS_HOURS, hoursOptions));
         }
 
         @CommandAlias("%SUICIDE")
@@ -198,7 +238,12 @@ final class Commands {
 
             PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, player.getUniqueId());
 
-            plugin.getServer().broadcast(plugin.getMiniMessage(Messages.SUICIDE_BROADCAST, true, playerProfile.getPlayerName(), playerProfile.getPlayerDisplay(), message));
+            MessageOptions options = new MessageOptions(
+                    playerProfile.getPlayerName(),
+                    playerProfile.getPlayerDisplay(),
+                    message
+            );
+            plugin.getServer().broadcast(EterniaLib.getChatCommons().parseMessage(Messages.SUICIDE_BROADCAST, options));
         }
 
         @CommandAlias("%PROFILE")
@@ -226,7 +271,7 @@ final class Commands {
 
                 int playedMinutes = targetProfile.getPlayedMinutes();
 
-                Component dhm = plugin.parseColor(
+                Component dhm = EterniaLib.getChatCommons().parseColor(
                         String.format(
                                 plugin.getString(Strings.PROFILE_PLAYED_TIME),
                                 TimeUnit.MINUTES.toDays(playedMinutes),
@@ -237,14 +282,20 @@ final class Commands {
 
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd");
 
-                plugin.sendMiniMessages(player, Messages.PROFILE_TITLE, false);
+                MessageOptions noPrefixOptions = new MessageOptions(false);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.PROFILE_TITLE, noPrefixOptions);
                 for (String msg : plugin.getStringList(Lists.PROFILE_CUSTOM_MESSAGES)) {
-                    player.sendMessage(plugin.parseColor(plugin.setPlaceholders(target, msg)));
+                    player.sendMessage(EterniaLib.getChatCommons().parseColor(plugin.setPlaceholders(target, msg)));
                 }
-                player.sendMessage(plugin.getMiniMessage(Messages.PROFILE_ACCOUNT_PLAYED_TIME, false).append(dhm));
-                plugin.sendMiniMessages(player, Messages.PROFILE_REGISTER_DATA, false, simpleDateFormat.format(new Date(targetProfile.getFirstJoin().getTime())));
-                plugin.sendMiniMessages(player, Messages.PROFILE_LAST_LOGIN, false, simpleDateFormat.format(new Date(targetProfile.getLastJoin().getTime())));
-                plugin.sendMiniMessages(player, Messages.PROFILE_TITLE, false);
+                player.sendMessage(EterniaLib.getChatCommons().parseMessage(Messages.PROFILE_ACCOUNT_PLAYED_TIME, noPrefixOptions).append(dhm));
+
+                MessageOptions firstJoinOptions = new MessageOptions(false, simpleDateFormat.format(new Date(targetProfile.getFirstJoin().getTime())));
+                EterniaLib.getChatCommons().sendMessage(player, Messages.PROFILE_REGISTER_DATA, firstJoinOptions);
+
+                MessageOptions lastJoinOptions = new MessageOptions(false, simpleDateFormat.format(new Date(targetProfile.getLastJoin().getTime())));
+                EterniaLib.getChatCommons().sendMessage(player, Messages.PROFILE_LAST_LOGIN, lastJoinOptions);
+
+                EterniaLib.getChatCommons().sendMessage(player, Messages.PROFILE_TITLE, noPrefixOptions);
 
                 EterniaLib.getDatabase().update(PlayerProfile.class, targetProfile);
             });
@@ -268,7 +319,7 @@ final class Commands {
                 condenser.condenseItem(amounts[condenser.ordinal()], player);
             }
 
-            plugin.sendMiniMessages(player, Messages.ITEM_CONDENSER);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_CONDENSER);
         }
 
         private enum CondenserEnum {
@@ -354,7 +405,7 @@ final class Commands {
                 return;
             }
 
-            plugin.sendMiniMessages(player, Messages.SERVER_NO_PERM);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.SERVER_NO_PERM);
         }
 
         @CommandAlias("%HAT")
@@ -363,7 +414,7 @@ final class Commands {
         public void onHat(Player player) {
             ItemStack itemStack = player.getInventory().getItemInMainHand();
             if (itemStack.getType() == Material.AIR) {
-                plugin.sendMiniMessages(player, Messages.ITEM_NOT_FOUND);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_NOT_FOUND);
                 return;
             }
 
@@ -373,7 +424,7 @@ final class Commands {
             }
             player.getInventory().setHelmet(player.getInventory().getItemInMainHand());
             player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-            plugin.sendMiniMessages(player, Messages.ITEM_HELMET);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_HELMET);
         }
 
     }
@@ -402,25 +453,14 @@ final class Commands {
                 return;
             }
 
+            MessageOptions options = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
             if (playerProfile.isAfk()) {
-                Component afkLeaveMessage = plugin.getMiniMessage(
-                        Messages.AFK_LEAVE,
-                        true,
-                        playerProfile.getPlayerName(),
-                        playerProfile.getPlayerDisplay()
-                );
-                plugin.getServer().broadcast(afkLeaveMessage);
+                plugin.getServer().broadcast(EterniaLib.getChatCommons().parseMessage(Messages.AFK_LEAVE, options));
                 playerProfile.setAfk(false);
                 return;
             }
 
-            Component afkEnterMessage = plugin.getMiniMessage(
-                    Messages.AFK_ENTER,
-                    true,
-                    playerProfile.getPlayerName(),
-                    playerProfile.getPlayerDisplay()
-            );
-            plugin.getServer().broadcast(afkEnterMessage);
+            plugin.getServer().broadcast(EterniaLib.getChatCommons().parseMessage(Messages.AFK_ENTER, options));
             playerProfile.setAfk(true);
         }
     }
@@ -487,24 +527,26 @@ final class Commands {
                 String typeName = getType(type);
 
                 target.setGameMode(gameMode);
-                plugin.sendMiniMessages(target, Messages.GAMEMODE_SETED, typeName);
-                plugin.sendMiniMessages(
-                        sender,
-                        Messages.GAMEMODE_SET_FROM,
+                MessageOptions setOptions = new MessageOptions(typeName);
+                EterniaLib.getChatCommons().sendMessage(target, Messages.GAMEMODE_SETED, setOptions);
+
+                MessageOptions fromOptions = new MessageOptions(
                         typeName,
                         playerProfile.getPlayerName(),
                         playerProfile.getPlayerDisplay()
                 );
+                EterniaLib.getChatCommons().sendMessage(sender, Messages.GAMEMODE_SET_FROM, fromOptions);
                 return;
             }
 
             if (sender instanceof Player player) {
                 player.setGameMode(gameMode);
-                plugin.sendMiniMessages(player, Messages.GAMEMODE_SETED, getType(type));
+                MessageOptions options = new MessageOptions(getType(type));
+                EterniaLib.getChatCommons().sendMessage(player, Messages.GAMEMODE_SETED, options);
                 return;
             }
 
-            plugin.sendMiniMessages(sender, Messages.GAMEMODE_NOT_BY_CONSOLE);
+            EterniaLib.getChatCommons().sendMessage(sender, Messages.GAMEMODE_NOT_BY_CONSOLE);
         }
 
         private String getType(int type) {
@@ -520,12 +562,6 @@ final class Commands {
     @CommandAlias("%GODMODE")
     static class GodMode extends BaseCommand {
 
-        private final EterniaServer plugin;
-
-        public GodMode(final EterniaServer plugin) {
-            this.plugin = plugin;
-        }
-
         @Default
         @CatchUnknown
         @Syntax("%GODMODE_SYNTAX")
@@ -538,45 +574,28 @@ final class Commands {
                 Player target = onlineTarget.getPlayer();
                 PlayerProfile targetProfile = EterniaLib.getDatabase().get(PlayerProfile.class, target.getUniqueId());
 
+                MessageOptions playerOptions = new MessageOptions(targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
+                MessageOptions targetOptions = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+
                 targetProfile.setGod(!targetProfile.isGod());
                 if (targetProfile.isGod()) {
-                    plugin.sendMiniMessages(
-                            player,
-                            Messages.GODMODE_ENABLED_TO,
-                            targetProfile.getPlayerName(),
-                            targetProfile.getPlayerDisplay()
-                    );
-                    plugin.sendMiniMessages(
-                            target,
-                            Messages.GODMODE_ENABLED_BY,
-                            playerProfile.getPlayerName(),
-                            playerProfile.getPlayerDisplay()
-                    );
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.GODMODE_ENABLED_TO, playerOptions);
+                    EterniaLib.getChatCommons().sendMessage(target, Messages.GODMODE_ENABLED_BY, targetOptions);
                     return;
                 }
 
-                plugin.sendMiniMessages(
-                        player,
-                        Messages.GODMODE_DISABLED_TO,
-                        targetProfile.getPlayerName(),
-                        targetProfile.getPlayerDisplay()
-                );
-                plugin.sendMiniMessages(
-                        target,
-                        Messages.GODMODE_DISABLED_BY,
-                        playerProfile.getPlayerName(),
-                        playerProfile.getPlayerDisplay()
-                );
+                EterniaLib.getChatCommons().sendMessage(player, Messages.GODMODE_DISABLED_TO, playerOptions);
+                EterniaLib.getChatCommons().sendMessage(target, Messages.GODMODE_DISABLED_BY, targetOptions);
                 return;
             }
 
             playerProfile.setGod(!playerProfile.isGod());
             if (playerProfile.isGod()) {
-                plugin.sendMiniMessages(player, Messages.GODMODE_ENABLED);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.GODMODE_ENABLED);
                 return;
             }
 
-            plugin.sendMiniMessages(player, Messages.GODMODE_DISABLED);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.GODMODE_DISABLED);
         }
 
     }

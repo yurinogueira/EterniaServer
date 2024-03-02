@@ -14,7 +14,7 @@ import br.com.eterniaserver.acf.annotation.Subcommand;
 import br.com.eterniaserver.acf.annotation.Syntax;
 import br.com.eterniaserver.acf.bukkit.contexts.OnlinePlayer;
 import br.com.eterniaserver.eternialib.EterniaLib;
-import br.com.eterniaserver.eternialib.database.DatabaseInterface;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
 import br.com.eterniaserver.eterniaserver.enums.Lists;
@@ -34,6 +34,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
 final class Commands {
 
@@ -48,12 +49,10 @@ final class Commands {
 
         private final EterniaServer plugin;
         private final Services.Experience expService;
-        private final DatabaseInterface database;
 
         public Experience(final EterniaServer plugin, Services.Experience experienceService) {
             this.plugin = plugin;
             this.expService = experienceService;
-            this.database = EterniaLib.getDatabase();
         }
 
         @Default
@@ -73,7 +72,7 @@ final class Commands {
         @CommandPermission("%EXPERIENCE_SET_PERM")
         public void onSet(CommandSender sender, OnlinePlayer onlineTarget, @Conditions("limits:min=1,max=9999999") Integer amount, @Default("level") String type) {
             if (!DEFAULT_TYPES.contains(type)) {
-                plugin.sendMiniMessages(sender, Messages.EXP_INVALID_CHOICE);
+                EterniaLib.getChatCommons().sendMessage(sender, Messages.EXP_INVALID_CHOICE);
                 return;
             }
 
@@ -84,8 +83,7 @@ final class Commands {
                 target.setLevel(0);
                 target.giveExp(amount);
                 label = plugin.getString(Strings.EXP_XP_LABEL);
-            }
-            else {
+            } else {
                 target.setLevel(amount);
                 label = plugin.getString(Strings.EXP_LEVEL_LABEL);
             }
@@ -100,7 +98,7 @@ final class Commands {
         @CommandPermission("%EXPERIENCE_TAKE_PERM")
         public void onTake(CommandSender sender, OnlinePlayer onlineTarget, @Conditions("limits:min=1,max=9999999") Integer amount, @Default("level") String type) {
             if (!DEFAULT_TYPES.contains(type)) {
-                plugin.sendMiniMessages(sender, Messages.EXP_INVALID_CHOICE);
+                EterniaLib.getChatCommons().sendMessage(sender, Messages.EXP_INVALID_CHOICE);
                 return;
             }
 
@@ -129,7 +127,7 @@ final class Commands {
         @CommandPermission("%EXPERIENCE_GIVE_PERM")
         public void onGive(CommandSender sender, OnlinePlayer onlineTarget, @Conditions("limits:min=1,max=9999999") Integer amount, @Default("level") String type) {
             if (!DEFAULT_TYPES.contains(type)) {
-                plugin.sendMiniMessages(sender, Messages.EXP_INVALID_CHOICE);
+                EterniaLib.getChatCommons().sendMessage(sender, Messages.EXP_INVALID_CHOICE);
                 return;
             }
 
@@ -157,7 +155,7 @@ final class Commands {
                                  String amount,
                                  String typeLabel) {
 
-            PlayerProfile targetProfile = database.get(PlayerProfile.class, target.getUniqueId());
+            PlayerProfile targetProfile = EterniaLib.getDatabase().get(PlayerProfile.class, target.getUniqueId());
             String targetName = targetProfile.getPlayerName();
             String targetDisplay = targetProfile.getPlayerDisplay();
 
@@ -165,9 +163,21 @@ final class Commands {
             String senderName = senderNameDisplay[0];
             String senderDisplay = senderNameDisplay[1];
 
-            plugin.sendMiniMessages(sender, from, amount, targetName, targetDisplay, typeLabel);
-            plugin.sendMiniMessages(target.getPlayer(), to, amount, senderName, senderDisplay, typeLabel);
+            MessageOptions playerOptions = new MessageOptions(
+                    amount,
+                    targetName,
+                    targetDisplay,
+                    typeLabel
+            );
+            EterniaLib.getChatCommons().sendMessage(sender, from, playerOptions);
 
+            MessageOptions targetOptions = new MessageOptions(
+                    amount,
+                    senderName,
+                    senderDisplay,
+                    typeLabel
+            );
+            EterniaLib.getChatCommons().sendMessage(target, to, targetOptions);
         }
 
         @Subcommand("%EXPERIENCE_CHECK")
@@ -177,7 +187,7 @@ final class Commands {
             UUID uuid = player.getUniqueId();
             expService.getBalance(uuid).whenCompleteAsync(((expBalance, throwable) -> {
                 if (throwable != null) {
-                    EterniaLib.registerLog("EE-303-ExpCheck Error");
+                    plugin.getLogger().log(Level.SEVERE, "EE-303-ExpCheck Error: {0}", throwable.getMessage());
                     return;
                 }
 
@@ -188,7 +198,8 @@ final class Commands {
                     player.setExp(0);
                     player.giveExp(expBalance.getBalance());
 
-                    plugin.sendMiniMessages(player, Messages.EXP_BALANCE, String.valueOf(player.getLevel()));
+                    MessageOptions options = new MessageOptions(String.valueOf(player.getLevel()));
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.EXP_BALANCE, options);
 
                     player.setLevel(0);
                     player.setExp(0);
@@ -207,7 +218,7 @@ final class Commands {
             int xp = playerActualXp(player);
 
             if (actualLevel < levelWanted || levelWanted < 1) {
-                plugin.sendMiniMessages(player, Messages.EXP_INSUFFICIENT);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.EXP_INSUFFICIENT);
                 return;
             }
 
@@ -220,12 +231,12 @@ final class Commands {
             dataContainer.set(plugin.getKey(ItemsKeys.TAG_FUNCTION), PersistentDataType.INTEGER, 0);
             dataContainer.set(plugin.getKey(ItemsKeys.TAG_INT_VALUE), PersistentDataType.INTEGER, xpWant);
 
-            meta.displayName(plugin.parseColor(plugin.getString(Strings.MINI_MESSAGES_BOTTLE_EXP_NAME)));
+            meta.displayName(EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.MINI_MESSAGES_BOTTLE_EXP_NAME)));
             meta.lore(
                     plugin.getStringList(Lists.MINI_MESSAGES_BOTTLE_EXP_LORE)
                             .stream()
                             .map(x -> x.replace("%amount%", levelWanted + " Níveis"))
-                            .map(plugin::parseColor)
+                            .map(EterniaLib.getChatCommons()::parseColor)
                             .toList()
             );
 
@@ -236,7 +247,7 @@ final class Commands {
             player.setExp(0);
             player.giveExp(xp - xpWant);
 
-            plugin.sendMiniMessages(player, Messages.EXP_BOTTLED);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.EXP_BOTTLED);
         }
 
         @CommandCompletion("10")
@@ -250,19 +261,20 @@ final class Commands {
 
             expService.getBalance(uuid).whenCompleteAsync((balance, throwable) -> {
                 if (throwable != null) {
-                    EterniaLib.registerLog("EE-302-ExpWithdraw Error");
+                    plugin.getLogger().log(Level.SEVERE, "EE-302-ExpWithdraw Error: {0}", throwable.getMessage());
                     return;
                 }
 
                 if (balance.getBalance() < wantedXp) {
-                    plugin.sendMiniMessages(player, Messages.EXP_INSUFFICIENT);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.EXP_INSUFFICIENT);
                     return;
                 }
 
                 balance.setBalance(balance.getBalance() - wantedXp);
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                     player.giveExp(wantedXp);
-                    plugin.sendMiniMessages(player, Messages.EXP_WITHDRAW, String.valueOf(level));
+                    MessageOptions options = new MessageOptions(String.valueOf(level));
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.EXP_WITHDRAW, options);
                 });
             });
         }
@@ -277,7 +289,7 @@ final class Commands {
             int actualLevel = player.getLevel();
 
             if (actualLevel < xpla) {
-                plugin.sendMiniMessages(player, Messages.EXP_INSUFFICIENT);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.EXP_INSUFFICIENT);
                 return;
             }
 
@@ -290,13 +302,14 @@ final class Commands {
 
             expService.getBalance(uuid).whenCompleteAsync((balance, throwable) -> {
                 if (throwable != null) {
-                    EterniaLib.registerLog("EE-301-ExpDeposit Error");
+                    plugin.getLogger().log(Level.SEVERE, "EE-301-ExpDeposit Error: {0}", throwable.getMessage());
                     return;
                 }
 
                 balance.setBalance(balance.getBalance() + amountToDeposit);
                 expService.updateBalance(balance);
-                plugin.sendMiniMessages(player, Messages.EXP_DEPOSIT, String.valueOf(xpla));
+                MessageOptions options = new MessageOptions(String.valueOf(xpla));
+                EterniaLib.getChatCommons().sendMessage(player, Messages.EXP_DEPOSIT, options);
             });
         }
 

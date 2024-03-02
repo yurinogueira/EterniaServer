@@ -2,6 +2,7 @@ package br.com.eterniaserver.eterniaserver.modules.item;
 
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -58,7 +59,7 @@ final class Handlers implements Listener {
             return false;
         }
 
-        executeCommands(player, itemStack, itemMeta);
+        executeCommands(player, itemMeta);
         checkItemUsages(player, itemStack, itemMeta);
 
         itemStack.setItemMeta(itemMeta);
@@ -66,11 +67,11 @@ final class Handlers implements Listener {
         return true;
     }
 
-    private void executeCommands(Player player, ItemStack itemStack, ItemMeta itemMeta) {
-        String cmds = itemMeta.getPersistentDataContainer().getOrDefault(plugin.getKey(ItemsKeys.TAG_RUN_COMMAND), PersistentDataType.STRING, "");
+    private void executeCommands(Player player, ItemMeta itemMeta) {
+        String commands = itemMeta.getPersistentDataContainer().getOrDefault(plugin.getKey(ItemsKeys.TAG_RUN_COMMAND), PersistentDataType.STRING, "");
         boolean runInConsole = itemMeta.getPersistentDataContainer().getOrDefault(plugin.getKey(ItemsKeys.TAG_RUN_IN_CONSOLE), PersistentDataType.INTEGER, 0) == 1;
 
-        for (String cmd : cmds.split(";")) {
+        for (String cmd : commands.split(";")) {
             if (runInConsole) {
                 plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), plugin.setPlaceholders(player, cmd));
             } else {

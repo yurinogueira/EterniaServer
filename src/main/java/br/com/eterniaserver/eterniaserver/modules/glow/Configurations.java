@@ -1,9 +1,11 @@
 package br.com.eterniaserver.eterniaserver.modules.glow;
 
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
-import br.com.eterniaserver.eterniaserver.EterniaServer;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
 
@@ -19,17 +21,15 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class GlowMessageConfiguration implements ReloadableConfiguration {
+    static class GlowMessageConfiguration implements MsgConfiguration<Messages> {
 
-        private final String[] messages;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final MessageMap<Messages, String> messageMap;
 
-        public GlowMessageConfiguration(EterniaServer plugin) {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.messages = plugin.messages();
+        public GlowMessageConfiguration(MessageMap<Messages, String> messageMap) {
+            this.messageMap = messageMap;
         }
 
         @Override
@@ -53,13 +53,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return messages;
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -70,17 +65,17 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.GLOW_ENABLED,
-                    "Brilho de brabuleta ativado<color:#555555>!"
+                    "Brilho de brabuleta ativado#555555!"
             );
             addMessage(Messages.GLOW_DISABLED,
-                    "Brilho de brabuleta desativado<color:#555555>."
+                    "Brilho de brabuleta desativado#555555."
             );
             addMessage(Messages.GLOW_COLOR_CHANGED,
-                    "Cor do brilhinho alterada para <color:#00aaaa>{0}<color:#555555>.",
+                    "Cor do brilhinho alterada para #00aaaa{0}#555555.",
                     "nome da cor"
             );
             addMessage(Messages.GLOW_INVALID_COLOR,
-                    "Cor inválida<color:#555555>."
+                    "Cor inválida#555555."
             );
         }
 
@@ -88,19 +83,10 @@ final class Configurations {
         public void executeCritical() { }
     }
 
-    static class GlowCommandsConfiguration implements ReloadableConfiguration {
+    static class GlowCommandsConfiguration implements CmdConfiguration<Enums.Commands> {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
-
-        private final CommandLocale[] commandsLocalesArray;
-
-        public GlowCommandsConfiguration() {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-        }
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         @Override
         public FileConfiguration inFileConfiguration() {
@@ -120,16 +106,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.GLOW_COMMANDS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override
@@ -161,14 +137,12 @@ final class Configurations {
 
     static class GlowConfiguration implements ReloadableConfiguration {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         private final Services.Glow servicesGlow;
 
         protected GlowConfiguration(Services.Glow servicesGlow) {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
             this.servicesGlow = servicesGlow;
         }
 
@@ -190,16 +164,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.GLOW_CONFIG_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
         }
 
         @Override

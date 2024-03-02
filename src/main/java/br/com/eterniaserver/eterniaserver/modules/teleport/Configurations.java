@@ -1,14 +1,18 @@
 package br.com.eterniaserver.eterniaserver.modules.teleport;
 
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.Integers;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
 import br.com.eterniaserver.eterniaserver.enums.Strings;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -21,18 +25,15 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class TeleportMessagesConfiguration implements ReloadableConfiguration {
+    static class TeleportMessagesConfiguration implements MsgConfiguration<Messages> {
 
-        private final EterniaServer plugin;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final MessageMap<Messages, String> messageMap;
 
-        public TeleportMessagesConfiguration(EterniaServer plugin) {
-            this.plugin = plugin;
-
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
+        public TeleportMessagesConfiguration(MessageMap<Messages, String> messageMap) {
+            this.messageMap = messageMap;
         }
 
         @Override
@@ -56,13 +57,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -73,88 +69,88 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.TELEPORT_ON_GOING,
-                    "Teleportando para <color:#00aaaa>{0}",
+                    "Teleportando para #00aaaa{0}",
                     "local"
             );
             addMessage(Messages.HOME_DELETED,
-                    "Home <color:#00aaaa>{0}<color:#aaaaaa> deletada com sucesso<color:#555555>.",
+                    "Home #00aaaa{0}#aaaaaa deletada com sucesso#555555.",
                     "home"
             );
             addMessage(Messages.HOME_NOT_FOUND,
-                    "Home <color:#00aaaa>{0}<color:#aaaaaa> não encontrada<color:#555555>.",
+                    "Home #00aaaa{0}#aaaaaa não encontrada#555555.",
                     "home"
             );
             addMessage(Messages.HOME_LIST,
-                    "Lista de homes<color:#555555>: <color:#00aaaa>{0}<color:#555555>.",
+                    "Lista de homes#555555: #00aaaa{0}#555555.",
                     "lista de homes"
             );
             addMessage(Messages.HOME_STRING_LIMIT,
-                    "O nome da home não pode ter mais de <color:#00aaaa>{0}<color:#aaaaaa> caracteres<color:#555555>.",
+                    "O nome da home não pode ter mais de #00aaaa{0}#aaaaaa caracteres#555555.",
                     "limite de caracteres"
             );
             addMessage(Messages.HOME_CREATED,
-                    "Home <color:#00aaaa>{0}<color:#aaaaaa> criada com sucesso<color:#555555>.",
+                    "Home #00aaaa{0}#aaaaaa criada com sucesso#555555.",
                     "home"
             );
             addMessage(Messages.HOME_NO_PERM_TO_COMPASS,
-                    "Você não tem permissão para criar homes extras com bússolas<color:#555555>."
+                    "Você não tem permissão para criar homes extras com bússolas#555555."
             );
             addMessage(Messages.HOME_ITEM_NAME,
-                    "<color:#555555>[<color:#00aaaa>{0}<color:#555555>]",
+                    "#555555[#00aaaa{0}#555555]",
                     "home"
             );
             addMessage(Messages.HOME_LIMIT_REACHED,
-                    "Você atingiu o limite de homes<color:#555555>."
+                    "Você atingiu o limite de homes#555555."
             );
             addMessage(Messages.TPA_REQUESTED_TO,
-                    "Solicitação de teleporte para <color:#00aaaa>{1}<color:#aaaaaa> enviada<color:#555555>.",
+                    "Solicitação de teleporte para #00aaaa{1}#aaaaaa enviada#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.TPA_REQUESTED_FROM,
-                    "Solicitação de teleporte de <color:#00aaaa>{1}<color:#aaaaaa> recebida<color:#555555>.",
+                    "Solicitação de teleporte de #00aaaa{1}#aaaaaa recebida#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.TPA_HERE_REQUESTED_TO,
-                    "Solicitação de teleporte de <color:#00aaaa>{1}<color:#aaaaaa> até você enviada<color:#555555>.",
+                    "Solicitação de teleporte de #00aaaa{1}#aaaaaa até você enviada#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.TPA_HERE_REQUESTED_FROM,
-                    "Solicitação de teleporte para <color:#00aaaa>{1}<color:#aaaaaa> recebida<color:#555555>.",
+                    "Solicitação de teleporte para #00aaaa{1}#aaaaaa recebida#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.WARP_UPDATED,
-                    "Warp <color:#00aaaa>{0}<color:#aaaaaa> atualizada com sucesso<color:#555555>.",
+                    "Warp #00aaaa{0}#aaaaaa atualizada com sucesso#555555.",
                     "warp"
             );
             addMessage(Messages.WARP_CREATED,
-                    "Warp <color:#00aaaa>{0}<color:#aaaaaa> criada com sucesso<color:#555555>.",
+                    "Warp #00aaaa{0}#aaaaaa criada com sucesso#555555.",
                     "warp"
             );
             addMessage(Messages.WARP_NOT_FOUND,
-                    "Warp <color:#00aaaa>{0}<color:#aaaaaa> não encontrada<color:#555555>.",
+                    "Warp #00aaaa{0}#aaaaaa não encontrada#555555.",
                     "warp"
             );
             addMessage(Messages.WARP_TELEPORTING,
-                    "Teleportando para <color:#00aaaa>{0}<color:#aaaaaa>.",
+                    "Teleportando para #00aaaa{0}#aaaaaa.",
                     "warp"
             );
             addMessage(Messages.WARP_DELETED,
-                    "Warp <color:#00aaaa>{0}<color:#aaaaaa> deletada com sucesso<color:#555555>.",
+                    "Warp #00aaaa{0}#aaaaaa deletada com sucesso#555555.",
                     "warp"
             );
             addMessage(Messages.WARP_LIST,
-                    "Lista de warps<color:#555555>: <color:#00aaaa>{0}<color:#555555>.",
+                    "Lista de warps#555555: #00aaaa{0}#555555.",
                     "lista de warps"
             );
             addMessage(Messages.SPAWN_NOT_DEFINED,
-                    "O spawn não foi definido<color:#555555>."
+                    "O spawn não foi definido#555555."
             );
             addMessage(Messages.SPAWN_TELEPORTING,
-                    "Teleportando para o spawn<color:#555555>."
+                    "Teleportando para o spawn#555555."
             );
         }
 
@@ -162,18 +158,10 @@ final class Configurations {
         public void executeCritical() { }
     }
 
-    static class TeleportCommandsConfiguration implements ReloadableConfiguration {
+    static class TeleportCommandsConfiguration implements CmdConfiguration<Enums.Commands> {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
-
-        private final CommandLocale[] commandsLocalesArray;
-
-        public TeleportCommandsConfiguration() {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-        }
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         @Override
         public FileConfiguration inFileConfiguration() {
@@ -193,16 +181,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.TELEPORT_COMMANDS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override
@@ -313,14 +291,11 @@ final class Configurations {
 
         private final EterniaServer plugin;
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         public TeleportConfiguration(EterniaServer plugin) {
             this.plugin = plugin;
-
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
 
             NamespacedKey[] namespaceKeys = plugin.namespacedKeys();
 
@@ -351,16 +326,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.TELEPORT_CONFIG_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
         }
 
         @Override

@@ -1,8 +1,9 @@
 package br.com.eterniaserver.eterniaserver.modules.bed;
 
-import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.Integers;
 import br.com.eterniaserver.eterniaserver.enums.Lists;
@@ -21,17 +22,15 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class BedMessages implements ReloadableConfiguration {
+    static class BedMessages implements MsgConfiguration<Messages> {
 
-        private final EterniaServer plugin;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final MessageMap<Messages, String> messageMap;
 
-        BedMessages(EterniaServer plugin) {
-            this.plugin = plugin;
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
+        public BedMessages(MessageMap<Messages, String> messageMap) {
+            this.messageMap = messageMap;
         }
 
         @Override
@@ -56,13 +55,8 @@ final class Configurations {
 
 
         @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -73,15 +67,15 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.NIGHT_SKIPPED,
-                    "A noite passou em <color:#00aaaa>{0}<color:#555555>.",
+                    "A noite passou em #00aaaa{0}#555555.",
                     "mundo"
             );
             addMessage(Messages.NIGHT_SKIPPING,
-                    "A noite está passando em <color:#00aaaa>{0}<color:#555555>.",
+                    "A noite está passando em #00aaaa{0}#555555.",
                     "mundo"
             );
             addMessage(Messages.NIGHT_PLAYER_SLEEPING,
-                    "<color:#00aaaa>{0}<color:#aaaaaa> está dormindo<color:#555555>, <color:#aaaaaa>durma também para passar a noite mais rápido<color:#555555>.",
+                    "#00aaaa{0}#aaaaaa está dormindo#555555, #aaaaaadurma também para passar a noite mais rápido#555555.",
                     "jogador",
                     "mundo"
             );
@@ -123,16 +117,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.BED_CONFIG_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
         }
 
         @Override

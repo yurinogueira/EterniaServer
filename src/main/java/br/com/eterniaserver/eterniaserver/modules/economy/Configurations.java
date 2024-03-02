@@ -1,11 +1,19 @@
 package br.com.eterniaserver.eterniaserver.modules.economy;
 
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
-import br.com.eterniaserver.eterniaserver.enums.*;
+import br.com.eterniaserver.eterniaserver.enums.Booleans;
+import br.com.eterniaserver.eterniaserver.enums.Doubles;
+import br.com.eterniaserver.eterniaserver.enums.Integers;
+import br.com.eterniaserver.eterniaserver.enums.Messages;
+import br.com.eterniaserver.eterniaserver.enums.Strings;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
+
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -16,18 +24,10 @@ final class Configurations {
     private Configurations() {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
-    static class CommandsConfiguration implements ReloadableConfiguration {
+    static class CommandsConfiguration implements CmdConfiguration<Enums.Commands> {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
-
-        private final CommandLocale[] commandsLocalesArray;
-
-        public CommandsConfiguration() {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-        }
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         @Override
         public FileConfiguration inFileConfiguration() {
@@ -47,16 +47,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.ECONOMY_COMMANDS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override
@@ -185,17 +175,15 @@ final class Configurations {
 
     }
 
-    static class MessagesConfiguration implements ReloadableConfiguration {
+    static class MessagesConfiguration implements MsgConfiguration<Messages> {
 
-        private final EterniaServer plugin;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final MessageMap<Messages, String> messageMap;
 
-        public MessagesConfiguration(EterniaServer plugin) {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.plugin = plugin;
+        public MessagesConfiguration(MessageMap<Messages, String> messageMap) {
+            this.messageMap = messageMap;
         }
 
         @Override
@@ -219,13 +207,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -236,221 +219,221 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.ECO_PAGE_LIMIT,
-                    "Escolha uma página entre 1 e <color:#00aaaa>{0}<color:#555555>.",
+                    "Escolha uma página entre 1 e #00aaaa{0}#555555.",
                     "quantidade de páginas"
             );
             addMessage(Messages.ECO_BALTOP_TITLE,
-                    "Mais Ricos<color:#555555>,<color:#aaaaaa> página <color:#00aaaa>{0}<color:#555555>.",
+                    "Mais Ricos#555555,#aaaaaa página #00aaaa{0}#555555.",
                     "número da página atual"
             );
             addMessage(Messages.ECO_BALTOP_LIST,
-                    "<color:#00aaaa>{1} <color:#555555>- <color:#aaaaaa>Saldo<color:#555555>: <color:#00aaaa>{2}",
+                    "#00aaaa{1} #555555- #aaaaaaSaldo#555555: #00aaaa{2}",
                     "nome do jogador",
                     "apelido do jogador",
                     "saldo do jogador"
             );
             addMessage(Messages.ECO_PAGE,
-                    "<color:#555555>---",
+                    "#555555---",
                     "Left: Página anterior",
                     "Right: Próxima página"
             );
             addMessage(Messages.ECO_BALANCE_IN_CONSOLE,
-                    "Você não pode verificar o seu saldo no console<color:#555555>, <color:#aaaaaa>informe um jogador<color:#555555>."
+                    "Você não pode verificar o seu saldo no console#555555, #aaaaaainforme um jogador#555555."
             );
             addMessage(Messages.ECO_BALANCE,
-                    "O saldo de <color:#00aaaa>{1}<color:#aaaaaa> é <color:#00aaaa>{2}<color:#555555>.",
+                    "O saldo de #00aaaa{1}#aaaaaa é #00aaaa{2}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "saldo do jogador"
             );
             addMessage(Messages.ECO_CANT_PAY_YOURSELF,
-                    "Você não pode pagar a si mesmo<color:#555555>."
+                    "Você não pode pagar a si mesmo#555555."
             );
             addMessage(Messages.ECO_INVALID_VALUE,
-                    "Você deve informar uma quantia válida<color:#555555>."
+                    "Você deve informar uma quantia válida#555555."
             );
             addMessage(Messages.ECO_INSUFFICIENT_BALANCE,
-                    "Saldo suficiente<color:#555555>."
+                    "Saldo suficiente#555555."
             );
             addMessage(Messages.ECO_PAYED,
-                    "Você pagou <color:#00aaaa>{2}<color:#aaaaaa> para <color:#00aaaa>{1}<color:#555555>.",
+                    "Você pagou #00aaaa{2}#aaaaaa para #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "saldo do jogador"
             );
             addMessage(Messages.ECO_RECEIVED,
-                    "Você recebeu <color:#00aaaa>{2}<color:#aaaaaa> de <color:#00aaaa>{1}<color:#555555>.",
+                    "Você recebeu #00aaaa{2}#aaaaaa de #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "saldo do jogador"
             );
             addMessage(Messages.ECO_GIVED,
-                    "Você deu <color:#00aaaa>{2}<color:#aaaaaa> para <color:#00aaaa>{1}<color:#555555>.",
+                    "Você deu #00aaaa{2}#aaaaaa para #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "saldo do jogador"
             );
             addMessage(Messages.ECO_RETIRED,
-                    "{1} retirou <color:#00aaaa>{2}<color:#aaaaaa> do seu saldo<color:#555555>.",
+                    "{1} retirou #00aaaa{2}#aaaaaa do seu saldo#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "saldo do jogador"
             );
             addMessage(Messages.ECO_TAKED,
-                    "Você retirou <color:#00aaaa>{2}<color:#aaaaaa> do saldo de <color:#00aaaa>{1}<color:#555555>.",
+                    "Você retirou #00aaaa{2}#aaaaaa do saldo de #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "saldo do jogador"
             );
             addMessage(Messages.ECO_BANK_LIST_TITLE,
-                    "Bancos<color:#555555>,<color:#aaaaaa> página <color:#00aaaa>{0}<color:#555555>.",
+                    "Bancos#555555,#aaaaaa página #00aaaa{0}#555555.",
                     "número da página atual"
             );
             addMessage(Messages.ECO_BANK_LIST,
-                    "<color:#00aaaa>{0} <color:#555555>- <color:#aaaaaa>Saldo<color:#555555>: <color:#00aaaa>{1}",
+                    "#00aaaa{0} #555555- #aaaaaaSaldo#555555: #00aaaa{1}",
                     "nome do banco",
                     "saldo do banco"
             );
             addMessage(Messages.ECO_BANK_NAME_LIMIT,
-                    "O nome do banco deve ter no máximo <color:#00aaaa>{0}<color:#aaaaaa> caracteres<color:#555555>.",
+                    "O nome do banco deve ter no máximo #00aaaa{0}#aaaaaa caracteres#555555.",
                     "número máximo de caracteres"
             );
             addMessage(Messages.ECO_BANK_NAME_INVALID,
-                    "O nome do banco deve conter apenas letras<color:#555555>."
+                    "O nome do banco deve conter apenas letras#555555."
             );
             addMessage(Messages.ECO_BANK_NOT_HAS_AMOUNT,
-                    "O banco não possui essa quantia<color:#555555>."
+                    "O banco não possui essa quantia#555555."
             );
             addMessage(Messages.ECO_BANK_ALREADY_EXISTS,
-                    "O banco <color:#00aaaa>{0}<color:#aaaaaa> já existe<color:#555555>.",
+                    "O banco #00aaaa{0}#aaaaaa já existe#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_CREATED,
-                    "Você criou o banco <color:#00aaaa>{0}<color:#555555>.",
+                    "Você criou o banco #00aaaa{0}#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_CREATED_BROADCAST,
-                    "<color:#00aaaa>{1}<color:#aaaaaa> criou o banco <color:#00aaaa>{2}<color:#555555>.",
+                    "#00aaaa{1}#aaaaaa criou o banco #00aaaa{2}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_NOT_EXIST,
-                    "O banco <color:#00aaaa>{0}<color:#aaaaaa> não existe<color:#555555>.",
+                    "O banco #00aaaa{0}#aaaaaa não existe#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_NOT_MEMBER,
-                    "Você não é membro do banco <color:#00aaaa>{0}<color:#555555>.",
+                    "Você não é membro do banco #00aaaa{0}#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_NOT_OWNER,
-                    "Você não é dono do banco <color:#00aaaa>{0}<color:#555555>.",
+                    "Você não é dono do banco #00aaaa{0}#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_DELETED,
-                    "Você deletou o banco <color:#00aaaa>{0}<color:#555555>.",
+                    "Você deletou o banco #00aaaa{0}#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_DELETED_BROADCAST,
-                    "<color:#00aaaa>{1}<color:#aaaaaa> deletou o banco <color:#00aaaa>{2}<color:#555555>.",
+                    "#00aaaa{1}#aaaaaa deletou o banco #00aaaa{2}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_ALREADY_HAS_BANK,
-                    "Você já possui um banco<color:#555555>.",
+                    "Você já possui um banco#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_NO_BANKS,
-                    "Você não possui bancos<color:#555555>."
+                    "Você não possui bancos#555555."
             );
             addMessage(Messages.ECO_BANK_MY_BANKS_TITLE,
-                    "Meus Bancos<color:#555555><color:#555555>."
+                    "Meus Bancos#555555#555555."
             );
             addMessage(Messages.ECO_BANK_MY_BANKS_LIST,
-                    "<color:#00aaaa>{0} <color:#555555>- <color:#aaaaaa>Cargo<color:#555555>: <color:#00aaaa>{1}",
+                    "#00aaaa{0} #555555- #aaaaaaCargo#555555: #00aaaa{1}",
                     "nome do banco",
                     "cargo do banco"
             );
             addMessage(Messages.ECO_BANK_DEPOSITED,
-                    "Você depositou <color:#00aaaa>{1}<color:#aaaaaa> no banco <color:#00aaaa>{0}<color:#555555>.",
+                    "Você depositou #00aaaa{1}#aaaaaa no banco #00aaaa{0}#555555.",
                     "nome do banco",
                     "saldo do banco"
             );
             addMessage(Messages.ECO_BANK_NO_WITHDRAW_PERMISSION,
-                    "Você não possui permissão para sacar do banco <color:#00aaaa>{1}<color:#555555>.",
+                    "Você não possui permissão para sacar do banco #00aaaa{1}#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_WITHDRAWN,
-                    "Você sacou <color:#00aaaa>{1}<color:#aaaaaa> do banco <color:#00aaaa>{0}<color:#555555>.",
+                    "Você sacou #00aaaa{1}#aaaaaa do banco #00aaaa{0}#555555.",
                     "nome do banco",
                     "saldo do banco"
             );
             addMessage(Messages.ECO_BANK_TARGET_NOT_MEMBER,
-                    "O jogador <color:#00aaaa>{2}<color:#aaaaaa> não é membro do banco <color:#00aaaa>{0}<color:#555555>.",
+                    "O jogador #00aaaa{2}#aaaaaa não é membro do banco #00aaaa{0}#555555.",
                     "nome do banco",
                     "nome do jogador",
                     "apeliido do jogador"
             );
             addMessage(Messages.ECO_BANK_INVALID_ROLE,
-                    "O cargo <color:#00aaaa>{1}<color:#aaaaaa> não existe no banco <color:#00aaaa>{0}<color:#555555>.",
+                    "O cargo #00aaaa{1}#aaaaaa não existe no banco #00aaaa{0}#555555.",
                     "nome do banco",
                     "nome do cargo"
             );
             addMessage(Messages.ECO_BANK_CHANGE_ROLE_TO,
-                    "Você mudou o cargo de <color:#00aaaa>{1}<color:#aaaaaa> para <color:#00aaaa>{2}<color:#555555>.",
+                    "Você mudou o cargo de #00aaaa{1}#aaaaaa para #00aaaa{2}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "nome do cargo",
                     "banco"
             );
             addMessage(Messages.ECO_BANK_CHANGE_ROLE,
-                    "{1} mudou o seu cargo para <color:#00aaaa>{2}<color:#555555>.",
+                    "{1} mudou o seu cargo para #00aaaa{2}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "nome do cargo",
                     "banco"
             );
             addMessage(Messages.ECO_BANK_ALREADY_MEMBER,
-                    "Você já é membro do banco <color:#00aaaa>{0}<color:#555555>.",
+                    "Você já é membro do banco #00aaaa{0}#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_TARGET_NOT_OWNER,
-                    "O jogador <color:#00aaaa>{2}<color:#aaaaaa> não é dono do banco <color:#00aaaa>{0}<color:#555555>.",
+                    "O jogador #00aaaa{2}#aaaaaa não é dono do banco #00aaaa{0}#555555.",
                     "nome do banco",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.ECO_BANK_AFILIATE_SUCCESS,
-                    "Você afiliou-se ao banco <color:#00aaaa>{0}<color:#555555>.",
+                    "Você afiliou-se ao banco #00aaaa{0}#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_AFFILIATE_REQUEST,
-                    "Você enviou um pedido de afiliação para o banco <color:#00aaaa>{2}<color:#555555>.",
+                    "Você enviou um pedido de afiliação para o banco #00aaaa{2}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_AFFILIATE_REQUESTED,
-                    "O jogador <color:#00aaaa>{1}<color:#aaaaaa> enviou um pedido de afiliação para o banco <color:#00aaaa>{2}<color:#555555>.",
+                    "O jogador #00aaaa{1}#aaaaaa enviou um pedido de afiliação para o banco #00aaaa{2}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_INFO_TITLE,
-                    "Informações do Banco <color:#00aaaa>{0}<color:#555555>.",
+                    "Informações do Banco #00aaaa{0}#555555.",
                     "nome do banco"
             );
             addMessage(Messages.ECO_BANK_INFO_BALANCE,
-                    "<color:#aaaaaa>Saldo: <color:#00aaaa>{0}<color:#555555>.",
+                    "#aaaaaaSaldo: #00aaaa{0}#555555.",
                     "saldo do banco"
             );
             addMessage(Messages.ECO_BANK_INFO_TAX,
-                    "<color:#aaaaaa>Taxa: <color:#00aaaa>{0}<color:#555555>.",
+                    "#aaaaaaTaxa: #00aaaa{0}#555555.",
                     "taxa do banco"
             );
             addMessage(Messages.ECO_BANK_INFO_MEMBERS,
-                    "<color:#aaaaaa>Membro<color:#555555>: <color:#00aaaa>{1} <color:#aaaaaa>Cargo<color:#555555>: <color:#00aaaa>{2}<color:#555555>.",
+                    "#aaaaaaMembro#555555: #00aaaa{1} #aaaaaaCargo#555555: #00aaaa{2}#555555.",
                     "membros do banco"
             );
         }
@@ -464,15 +447,10 @@ final class Configurations {
 
         private final EterniaServer plugin;
 
-        private final CommandLocale[] commandsLocalesArray;
-
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         public EconomyConfiguration(EterniaServer plugin) {
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
             this.plugin = plugin;
         }
 
@@ -494,16 +472,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.ECONOMY_CONFIG_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override

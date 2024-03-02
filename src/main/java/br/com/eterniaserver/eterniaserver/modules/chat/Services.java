@@ -1,6 +1,7 @@
 package br.com.eterniaserver.eterniaserver.modules.chat;
 
 import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.api.interfaces.ChatAPI;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
@@ -20,7 +21,7 @@ import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.Title.Times;
 
@@ -65,8 +66,8 @@ final class Services {
 
         protected static final String TELL_CHANNEL_STRING = "tellchannel";
 
-        private final static String NICKNAME_COLOR_REGEX = "[^\\w#<>]";
-        private final static String NICKNAME_CLEAR_REGEX = "<#[a-f\\\\d]{6}>";
+        private final static String NICKNAME_WORD_REGEX = "\\W";
+        private final static String CLEAR_COLOR_REGEX = "<#[a-fA-F\\d]{6}>";
 
         private final Map<UUID, UUID> tellMap = new ConcurrentHashMap<>();
         private final Map<Integer, UUID> playerHashToUUID = new HashMap<>();
@@ -163,14 +164,15 @@ final class Services {
             boolean isDiscordSRVChannel = channel == discordSRVChannel();
 
             if (muteAllChannels && !isTellChannel) {
-                plugin.sendMiniMessages(player, Messages.CHAT_CHANNELS_MUTED);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.CHAT_CHANNELS_MUTED);
                 return true;
             }
 
             UUID uuid = player.getUniqueId();
 
             if (isMuted(chatInfo)) {
-                plugin.sendMiniMessages(player, Messages.CHAT_ARE_MUTED, String.valueOf(secondsMutedLeft(uuid)));
+                MessageOptions options = new MessageOptions(String.valueOf(secondsMutedLeft(uuid)));
+                EterniaLib.getChatCommons().sendMessage(player, Messages.CHAT_ARE_MUTED, options);
                 return true;
             }
 
@@ -184,14 +186,14 @@ final class Services {
                 UUID targetUUID = getTellLink(uuid);
                 if (targetUUID == null) {
                     removeTellLink(uuid);
-                    plugin.sendMiniMessages(player, Messages.CHAT_TELL_NO_PLAYER);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.CHAT_TELL_NO_PLAYER);
                     return true;
                 }
 
                 Player target = plugin.getServer().getPlayer(targetUUID);
                 if (target == null || !target.isOnline()) {
                     removeTellLink(uuid);
-                    plugin.sendMiniMessages(player, Messages.CHAT_TELL_NO_PLAYER);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.CHAT_TELL_NO_PLAYER);
                     return true;
                 }
 
@@ -204,9 +206,9 @@ final class Services {
         }
 
         protected void sendPrivateMessage(AsyncChatEvent event,
-                                       Component component,
-                                       PlayerProfile playerProfile,
-                                       Player target) {
+                                          Component component,
+                                          PlayerProfile playerProfile,
+                                          Player target) {
 
             Player player = event.getPlayer();
             Set<Audience> viewers = event.viewers();
@@ -222,17 +224,17 @@ final class Services {
             viewers.add(player);
             viewers.add(target);
 
-            String msg = PlainTextComponentSerializer.plainText().serialize(component);
+            String msg = EterniaLib.getChatCommons().plain(component);
+            msg = msg.replaceAll(CLEAR_COLOR_REGEX, "");
 
-            Component spyMsgComponent = plugin.getMiniMessage(
-                    Messages.CHAT_SPY_TELL,
-                    false,
+            MessageOptions options = new MessageOptions(
                     msg,
                     playerProfile.getPlayerName(),
                     playerProfile.getPlayerDisplay(),
                     targetProfile.getPlayerName(),
                     targetProfile.getPlayerDisplay()
             );
+            Component spyMsgComponent = EterniaLib.getChatCommons().parseMessage(Messages.CHAT_SPY_TELL, options);
 
             String spyPerm = plugin.getString(Strings.PERM_SPY);
             for (Player other : plugin.getServer().getOnlinePlayers()) {
@@ -242,15 +244,7 @@ final class Services {
                 }
             }
 
-            Component msgComponent = plugin.getMiniMessage(
-                    Messages.CHAT_TELL,
-                    false,
-                    msg,
-                    playerProfile.getPlayerName(),
-                    playerProfile.getPlayerDisplay(),
-                    targetProfile.getPlayerName(),
-                    targetProfile.getPlayerDisplay()
-            );
+            Component msgComponent = EterniaLib.getChatCommons().parseMessage(Messages.CHAT_TELL, options);
 
             event.renderer((source, sourceDisplayName, message, viewer) -> {
                 Optional<UUID> viewerUUID = viewer.get(Identity.UUID);
@@ -271,12 +265,15 @@ final class Services {
             }
 
             if (!player.hasPermission(channelObject.perm())) {
-                plugin.sendMiniMessages(player, Messages.SERVER_NO_PERM);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.SERVER_NO_PERM);
                 return;
             }
 
             Component messageComponent = getChatComponentFormat(player, channelObject.format());
-            String messageStr = PlainTextComponentSerializer.plainText().serialize(component);
+            String messageStr = EterniaLib.getChatCommons().plain(component);
+            if (player.hasPermission(plugin.getString(Strings.PERM_CHAT_COLOR))) {
+                messageStr = EterniaLib.getChatCommons().getColor(messageStr);
+            }
 
             for (String section : messageStr.split(" ")) {
                 messageComponent = messageComponent.appendSpace().append(getComponent(
@@ -307,13 +304,12 @@ final class Services {
                         viewers.remove(receiver);
                     }
                     if (!isInRange && receiver.hasPermission(spyPerm) && isSpying(receiver.getUniqueId())) {
-                        plugin.sendMiniMessages(
-                                receiver,
-                                Messages.CHAT_SPY_LOCAL,
+                        MessageOptions options = new MessageOptions(
                                 messageStr,
                                 playerProfile.getPlayerName(),
                                 playerProfile.getPlayerDisplay()
                         );
+                        EterniaLib.getChatCommons().sendMessage(receiver, Messages.CHAT_SPY_LOCAL, options);
                     }
                 }
             }
@@ -330,7 +326,7 @@ final class Services {
             });
 
             if (viewers.isEmpty()) {
-                plugin.sendMiniMessages(player, Messages.CHAT_NO_ONE_NEAR);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.CHAT_NO_ONE_NEAR);
             }
         }
 
@@ -347,11 +343,11 @@ final class Services {
                 if (mentionPlayer != null) {
                     mentionPlayer.playNote(mentionPlayer.getLocation(), Instrument.PIANO, Note.natural(1, Note.Tone.F));
                     mentionPlayer.showTitle(Title.title(
-                            plugin.parseColor(plugin.getString(Strings.CONS_MENTION_TITLE)
+                            EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.CONS_MENTION_TITLE)
                                     .replace("{0}", playerProfile.getPlayerName())
                                     .replace("{1}", playerProfile.getPlayerDisplay())
                             ),
-                            plugin.parseColor(plugin.getString(Strings.CONS_MENTION_SUBTITLE)
+                            EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.CONS_MENTION_SUBTITLE)
                                     .replace("{0}", playerProfile.getPlayerName())
                                     .replace("{1}", playerProfile.getPlayerDisplay())
                             ), mentionTimes
@@ -368,7 +364,7 @@ final class Services {
                 }
             }
 
-            return Component.text(section).color(getPlayerDefaultColor(chatInfo, channelObject));
+            return MiniMessage.miniMessage().deserialize(section).color(getPlayerDefaultColor(chatInfo, channelObject));
         }
 
         private	Component getItemComponent(String string, ItemStack itemStack) {
@@ -420,10 +416,10 @@ final class Services {
         private Component loadComponent(Player player, CustomPlaceholder object) {
             Component component = object.value().equals("%player_displayname%") ?
                     player.displayName() :
-                    plugin.parseColor(plugin.setPlaceholders(player, object.value()));
+                    EterniaLib.getChatCommons().parseColor(plugin.setPlaceholders(player, object.value()));
 
             if (!object.hoverText().isEmpty()) {
-                component = component.hoverEvent(HoverEvent.showText(plugin.parseColor(plugin.setPlaceholders(player, object.hoverText()))));
+                component = component.hoverEvent(HoverEvent.showText(EterniaLib.getChatCommons().parseColor(plugin.setPlaceholders(player, object.hoverText()))));
             }
             if (!object.suggestCmd().isEmpty()) {
                 component = component.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.SUGGEST_COMMAND, plugin.setPlaceholders(player, object.suggestCmd())));
@@ -445,18 +441,17 @@ final class Services {
         protected String setPlayerDisplay(Player player, String nickname) {
             PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, player.getUniqueId());
 
-            String nicknameWithColor = nickname.replaceAll(NICKNAME_COLOR_REGEX, "");
-            String nicknameClear = nicknameWithColor.replaceAll(NICKNAME_CLEAR_REGEX, "");
+            nickname = nickname.replaceAll(NICKNAME_WORD_REGEX, "");
 
-            Component nicknameComponent = plugin.parseColor(nicknameWithColor);
+            Component nicknameComponent = EterniaLib.getChatCommons().parseColor(nickname);
 
-            playerProfile.setPlayerDisplay(nicknameClear);
+            playerProfile.setPlayerDisplay(nickname);
 
             player.displayName(nicknameComponent);
 
             EterniaLib.getDatabase().update(PlayerProfile.class, playerProfile);
 
-            return nicknameWithColor;
+            return nickname;
         }
 
         @Override

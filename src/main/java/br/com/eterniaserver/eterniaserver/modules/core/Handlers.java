@@ -1,6 +1,7 @@
 package br.com.eterniaserver.eterniaserver.modules.core;
 
 import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
 import br.com.eterniaserver.eterniaserver.modules.core.Entities.PlayerProfile;
@@ -13,6 +14,7 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 
 import net.kyori.adventure.text.Component;
 
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -37,7 +39,7 @@ final class Handlers implements Listener {
     public Handlers(EterniaServer plugin, AfkService afkServices) {
         this.plugin = plugin;
         this.afkServices = afkServices;
-        this.serverMOTD = plugin.parseColor(plugin.getString(Strings.MINI_MESSAGES_SERVER_SERVER_LIST));
+        this.serverMOTD = MiniMessage.miniMessage().deserialize(plugin.getString(Strings.MINI_MESSAGES_SERVER_SERVER_LIST));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -54,12 +56,12 @@ final class Handlers implements Listener {
             PlayerProfile damagerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, damager.getUniqueId());
             damagerProfile.setPvpLastJoin(System.currentTimeMillis());
             damagerProfile.setOnPvP(true);
-            plugin.sendMiniMessages(damager, Messages.ENTERED_PVP);
+            EterniaLib.getChatCommons().sendMessage(damager, Messages.ENTERED_PVP);
 
             if (damager.isFlying() && !damager.hasPermission(plugin.getString(Strings.PERM_FLY_BYPASS))) {
                 damager.setFlying(false);
                 damager.setAllowFlight(false);
-                plugin.sendMiniMessages(damager, Messages.FLY_DISABLED_ENTERED_PVP);
+                EterniaLib.getChatCommons().sendMessage(damager, Messages.FLY_DISABLED_ENTERED_PVP);
             }
         }
     }
@@ -106,12 +108,8 @@ final class Handlers implements Listener {
 
         afkServices.exitFromAfk(player, playerProfile, AfkStatusEvent.Cause.QUIT);
 
-        event.quitMessage(plugin.getMiniMessage(
-                Messages.SERVER_LOGOUT,
-                true,
-                playerProfile.getPlayerName(),
-                playerProfile.getPlayerDisplay()
-        ));
+        MessageOptions options = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+        event.quitMessage(EterniaLib.getChatCommons().parseMessage(Messages.SERVER_LOGOUT, options));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
@@ -123,11 +121,8 @@ final class Handlers implements Listener {
     public void onPlayerCommandPreProcess(PlayerCommandPreprocessEvent event) {
         String message = event.getMessage().toLowerCase();
         if (message.equalsIgnoreCase("/tps") || message.equalsIgnoreCase("/mspt")) {
-            plugin.sendMiniMessages(
-                    event.getPlayer(),
-                    Messages.SERVER_TPS,
-                    String.format("%.2f", plugin.getServer().getTPS()[0])
-            );
+            MessageOptions options = new MessageOptions(String.format("%.2f", plugin.getServer().getTPS()[0]));
+            EterniaLib.getChatCommons().sendMessage(event.getPlayer(), Messages.SERVER_TPS, options);
             event.setCancelled(true);
             return;
         }
@@ -182,12 +177,8 @@ final class Handlers implements Listener {
             );
         }
 
-        event.joinMessage(plugin.getMiniMessage(
-                Messages.SERVER_LOGIN,
-                true,
-                playerProfile.getPlayerName(),
-                playerProfile.getPlayerDisplay()
-        ));
+        MessageOptions options = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+        event.joinMessage(EterniaLib.getChatCommons().parseMessage(Messages.SERVER_LOGIN, options));
 
         afkServices.exitFromAfk(player, playerProfile, AfkStatusEvent.Cause.JOIN);
     }

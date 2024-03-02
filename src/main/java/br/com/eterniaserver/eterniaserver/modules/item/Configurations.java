@@ -1,8 +1,10 @@
 package br.com.eterniaserver.eterniaserver.modules.item;
 
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
@@ -20,18 +22,10 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class ItemCommandsConfiguration implements ReloadableConfiguration {
+    static class ItemCommandsConfiguration implements CmdConfiguration<Enums.Commands> {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
-
-        private final CommandLocale[] commandsLocalesArray;
-
-        public ItemCommandsConfiguration() {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-        }
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         @Override
         public FileConfiguration inFileConfiguration() {
@@ -51,16 +45,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.ITEM_COMMANDS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override
@@ -146,17 +130,15 @@ final class Configurations {
         }
     }
 
-    static class ItemMessagesConfiguration implements ReloadableConfiguration {
+    static class ItemMessagesConfiguration implements MsgConfiguration<Messages> {
 
-        private final EterniaServer plugin;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final MessageMap<Messages, String> messageMap;
 
         public ItemMessagesConfiguration(EterniaServer plugin) {
-            this.plugin = plugin;
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
+            this.messageMap = plugin.messages();
 
             NamespacedKey[] namespacedKeys = plugin.namespacedKeys();
 
@@ -192,13 +174,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -209,34 +186,34 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.ITEM_CUSTOM_GIVE,
-                    "Item customizado enviado com sucesso<color:#555555>."
+                    "Item customizado enviado com sucesso#555555."
             );
             addMessage(Messages.ITEM_CUSTOM_RECEIVED,
-                    "Você recebeu um item customizado<color:#555555>."
+                    "Você recebeu um item customizado#555555."
             );
             addMessage(Messages.ITEM_CUSTOM_CANT_GIVE,
-                    "Não foi possível enviar o item customizado<color:#555555>."
+                    "Não foi possível enviar o item customizado#555555."
             );
             addMessage(Messages.ITEM_SET_CUSTOM,
-                    "Modelo customizado definido para <color:#00aaaa>{0}<color:#555555>."
+                    "Modelo customizado definido para #00aaaa{0}#555555."
             );
             addMessage(Messages.ITEM_SET_LORE,
-                    "Lore do item definida para <color:#00aaaa>{0}<color:#555555>."
+                    "Lore do item definida para #00aaaa{0}#555555."
             );
             addMessage(Messages.ITEM_SET_NAME,
-                    "Nome do item definido para <color:#00aaaa>{0}<color:#555555>."
+                    "Nome do item definido para #00aaaa{0}#555555."
             );
             addMessage(Messages.ITEM_CLEAR_LORE,
-                    "Lore do item limpa<color:#555555>."
+                    "Lore do item limpa#555555."
             );
             addMessage(Messages.ITEM_CLEAR_NAME,
-                    "Nome do item limpo<color:#555555>."
+                    "Nome do item limpo#555555."
             );
             addMessage(Messages.ITEM_NOT_FOUND,
-                    "Item não encontrado<color:#555555>."
+                    "Item não encontrado#555555."
             );
             addMessage(Messages.ITEM_ADD_LORE,
-                    "Linha adicionada na lore do item<color:#555555>."
+                    "Linha adicionada na lore do item#555555."
             );
         }
 

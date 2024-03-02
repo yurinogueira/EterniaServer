@@ -1,6 +1,7 @@
 package br.com.eterniaserver.eterniaserver.modules.teleport;
 
 import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eternialib.commands.AdvancedCommand;
 import br.com.eterniaserver.eternialib.commands.enums.AdvancedCategory;
 import br.com.eterniaserver.eternialib.commands.enums.AdvancedRules;
@@ -9,7 +10,9 @@ import br.com.eterniaserver.eterniaserver.enums.Integers;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
 import br.com.eterniaserver.eterniaserver.enums.Strings;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
+
 import net.kyori.adventure.text.Component;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -94,25 +97,21 @@ public final class Utils {
 
     public static class TeleportCommand extends AdvancedCommand {
 
-        private final EterniaServer plugin;
-
         private final String message;
         private final Player sender;
         private final Location location;
 
+        private final int neededTimeInSeconds;
+
         private boolean aborted = false;
         private int commandTicks = 0;
 
-        public TeleportCommand(EterniaServer plugin, String locationName, Player sender, Location location) {
-            this.plugin = plugin;
+        public TeleportCommand(int neededTimeInSeconds, String locationName, Player sender, Location location) {
+            this.neededTimeInSeconds = neededTimeInSeconds;
             this.sender = sender;
             this.location = location;
 
-            this.message = plugin.getMessage(
-                    Messages.TELEPORT_ON_GOING,
-                    false,
-                    locationName
-            );
+            this.message = EterniaLib.getChatCommons().getMessage(Messages.TELEPORT_ON_GOING, new MessageOptions(false, locationName));
         }
 
         public static void addTeleport(EterniaServer plugin, Player player, Location location, String name) {
@@ -120,14 +119,15 @@ public final class Utils {
                 player.teleportAsync(location);
             } else {
                 Utils.TeleportCommand teleportCommand = new Utils.TeleportCommand(
-                        plugin,
+                        plugin.getInteger(Integers.TELEPORT_TIMER),
                         name,
                         player,
                         location
                 );
                 boolean result = EterniaLib.getAdvancedCmdManager().addTimedCommand(teleportCommand);
                 if (!result) {
-                    plugin.sendMiniMessages(player, Messages.ALREADY_IN_TIMING, name);
+                    MessageOptions options = new MessageOptions(name);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.ALREADY_IN_TIMING, options);
                 }
             }
         }
@@ -170,7 +170,7 @@ public final class Utils {
 
         @Override
         public int neededTimeInSeconds() {
-            return plugin.getInteger(Integers.TELEPORT_TIMER);
+            return neededTimeInSeconds;
         }
 
         @Override

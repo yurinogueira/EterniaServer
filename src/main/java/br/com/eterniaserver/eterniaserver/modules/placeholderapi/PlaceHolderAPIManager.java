@@ -4,7 +4,6 @@ import br.com.eterniaserver.eternialib.EterniaLib;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.modules.Module;
 
-
 public class PlaceHolderAPIManager implements Module {
 
     private final EterniaServer plugin;
@@ -17,11 +16,7 @@ public class PlaceHolderAPIManager implements Module {
     public void loadConfigurations() {
         Configurations.PlaceHolderConfiguration papiConfig = new Configurations.PlaceHolderConfiguration(plugin);
 
-        EterniaLib.registerConfiguration("eterniaserver", "papi", papiConfig);
-
-        papiConfig.executeConfig();
-        papiConfig.executeCritical();
-        papiConfig.saveConfiguration(true);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "papi", true, papiConfig);
 
         new Services.Placeholders(plugin).register();
     }

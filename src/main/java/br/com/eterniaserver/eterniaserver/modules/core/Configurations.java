@@ -1,8 +1,11 @@
 package br.com.eterniaserver.eterniaserver.modules.core;
 
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.Booleans;
 import br.com.eterniaserver.eterniaserver.enums.Integers;
@@ -32,17 +35,14 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class CommandsConfiguration implements ReloadableConfiguration {
+    static class CommandsConfiguration implements CmdConfiguration<Enums.Commands> {
 
         private final FileConfiguration inFile;
         private final FileConfiguration outFile;
 
-        private final CommandLocale[] commandsLocalesArray;
-
         CommandsConfiguration() {
             this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
             this.outFile = new YamlConfiguration();
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
         }
 
         @Override
@@ -63,16 +63,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.CORE_COMMANDS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override
@@ -236,17 +226,15 @@ final class Configurations {
 
     }
 
-    static class MessagesConfiguration implements ReloadableConfiguration {
+    static class MessagesConfiguration implements MsgConfiguration<Messages> {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final String[] messages;
+        private final MessageMap<Messages, String> messages;
 
-        MessagesConfiguration(EterniaServer plugin) {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.messages = plugin.messages();
+        public MessagesConfiguration(MessageMap<Messages, String> messages) {
+            this.messages = messages;
         }
 
         @Override
@@ -270,13 +258,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
+        public MessageMap<Messages, String> messages() {
             return messages;
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
         }
 
         @Override
@@ -286,87 +269,90 @@ final class Configurations {
 
         @Override
         public void executeConfig() {
+            addMessage(Messages.SERVER_PREFIX,
+                    "#555555[#34eb40E#3471ebS#555555]#AAAAAA "
+            );
             addMessage(Messages.SERVER_NO_PLAYER,
-                    "Somente jogadores podem utilizar esse comando<color:#555555>."
+                    "Somente jogadores podem utilizar esse comando#555555."
             );
             addMessage(Messages.GAMEMODE_SETED,
-                    "Seu modo de jogo foi definido para <color:#00aaaa>{0}<color:#555555>.",
+                    "Seu modo de jogo foi definido para #00aaaa{0}#555555.",
                     "modo de jogo"
             );
             addMessage(Messages.GAMEMODE_SET_FROM,
-                    "O modo de jogo de <color:#00aaaa>{2}<color:#aaaaaa> foi definido para <color:#00aaaa>{0}<color:#555555>.",
+                    "O modo de jogo de #00aaaa{2}#aaaaaa foi definido para #00aaaa{0}#555555.",
                     "modo de jogo",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.GAMEMODE_NOT_BY_CONSOLE,
-                    "Você precisa informar o nome de um jogador online<color:#555555>."
+                    "Você precisa informar o nome de um jogador online#555555."
             );
             addMessage(Messages.AFK_AUTO_ENTER,
-                    "<color:#00aaaa>{1} <color:#aaaaaa>ficou ausente e agora está AFK<color:#555555>.",
+                    "#00aaaa{1} #aaaaaaficou ausente e agora está AFK#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.AFK_ENTER,
-                    "<color:#00aaaa>{1} <color:#aaaaaa>está AFK<color:#555555>.",
+                    "#00aaaa{1} #aaaaaaestá AFK#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.AFK_LEAVE,
-                    "<color:#00aaaa>{1} <color:#aaaaaa>não está mais AFK<color:#555555>.",
+                    "#00aaaa{1} #aaaaaanão está mais AFK#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.AFK_BROADCAST_KICK,
-                    "<color:#00aaaa>{1} <color:#aaaaaa>ficou ausente e foi kickado<color:#555555>.",
+                    "#00aaaa{1} #aaaaaaficou ausente e foi kickado#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.AFK_KICKED,
-                    "<color:#aaaaaa>Você foi kickado por estar ausente<color:#555555>."
+                    "#aaaaaaVocê foi kickado por estar ausente#555555."
             );
             addMessage(Messages.GODMODE_ENABLED,
-                    "Você ativou o God Mode<color:#555555>."
+                    "Você ativou o God Mode#555555."
             );
             addMessage(Messages.GODMODE_DISABLED,
-                    "Vocẽ desativou o God Mode<color:#555555>."
+                    "Vocẽ desativou o God Mode#555555."
             );
             addMessage(Messages.GODMODE_DISABLED_TO,
-                    "Você desativou o God Mode de <color:#00aaaa>{1}<color:#555555>.",
+                    "Você desativou o God Mode de #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.GODMODE_DISABLED_BY,
-                    "God Mode desativado por <color:#00aaaa>{1}<color:#555555>.",
+                    "God Mode desativado por #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.GODMODE_ENABLED_TO,
-                    "Você ativou o God Mode de <color:#00aaaa>{1}<color:#555555>.",
+                    "Você ativou o God Mode de #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.GODMODE_ENABLED_BY,
-                    "God Mode ativado por <color:#00aaaa>{1}<color:#555555>.",
+                    "God Mode ativado por #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.SERVER_NO_PERM,
-                    "Você não possui permissão para isso<color:#555555>."
+                    "Você não possui permissão para isso#555555."
             );
             addMessage(Messages.ITEM_NOT_FOUND,
-                    "Nenhum item foi encontrado em sua mão<color:#555555>."
+                    "Nenhum item foi encontrado em sua mão#555555."
             );
             addMessage(Messages.ITEM_HELMET,
-                    "Você equipou seu caçapete<color:#555555>."
+                    "Você equipou seu caçapete#555555."
             );
             addMessage(Messages.STATS_MEM,
-                    "Memória<color:#555555>: <color:#00aaaa>{0}MB<color:#555555>/<color:#00aaaa>{1}MB<color:#555555>.",
+                    "Memória#555555: #00aaaa{0}MB#555555/#00aaaa{1}MB#555555.",
                     "memória usada",
                     "memória total"
             );
             addMessage(Messages.STATS_HOURS,
-                    "Tempo online<color:#555555>: <color:#aaaaaa>Dias<color:#555555>: <color:#00aaaa>{0} <color:#aaaaaa>horas<color:#555555>: <color:#00aaaa>{1} <color:#aaaaaa>minutos<color:#555555>: <color:#00aaaa>{2} <color:#aaaaaa>segundos<color:#555555>: <color:#00aaaa>{3}<color:#555555>.",
+                    "Tempo online#555555: #aaaaaaDias#555555: #00aaaa{0} #aaaaaahoras#555555: #00aaaa{1} #aaaaaaminutos#555555: #00aaaa{2} #aaaaaasegundos#555555: #00aaaa{3}#555555.",
                     "dias",
                     "horas",
                     "minutos",
@@ -376,113 +362,113 @@ final class Configurations {
                     "Compactando blocos."
             );
             addMessage(Messages.PROFILE_TITLE,
-                    "<color:#555555>[]====[<color:#aaaaaa>Perfil<color:#555555>]====[]"
+                    "#555555[]====[#aaaaaaPerfil#555555]====[]"
             );
             addMessage(Messages.PROFILE_REGISTER_DATA,
-                    "<color:#aaaaaa>Registro<color:#555555>: <color:#00aaaa>{0}<color:#555555>."
+                    "#aaaaaaRegistro#555555: #00aaaa{0}#555555."
             );
             addMessage(Messages.PROFILE_LAST_LOGIN,
-                    "<color:#aaaaaa>Ultimo login<color:#555555>: <color:#00aaaa>{0}<color:#555555>."
+                    "#aaaaaaUltimo login#555555: #00aaaa{0}#555555."
             );
             addMessage(Messages.PROFILE_ACCOUNT_PLAYED_TIME,
-                    "<color:#aaaaaa>Tempo jogado<color:#555555>: "
+                    "#aaaaaaTempo jogado#555555: "
             );
             addMessage(Messages.SUICIDE_BROADCAST,
-                    "<color:#00aaaa>{1} <color:#aaaaaa>disse<color:#555555>: <color:#00aaaa>{2} <color:#aaaaaa>e logo após se matou<color:#555555>.",
+                    "#00aaaa{1} #aaaaaadisse#555555: #00aaaa{2} #aaaaaae logo após se matou#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "mensagem"
             );
             addMessage(Messages.SPEED_INVALID,
-                    "Você deve informar um valor entre 1 e 10<color:#555555>."
+                    "Você deve informar um valor entre 1 e 10#555555."
             );
             addMessage(Messages.SPEED_SETED,
-                    "Você alterou a velocidade de movimento para <color:#00aaaa>{0}<color:#555555>.",
+                    "Você alterou a velocidade de movimento para #00aaaa{0}#555555.",
                     "velocidade de movimento"
             );
             addMessage(Messages.FEED_SETED_TO,
-                    "Você alimentou <color:#00aaaa>{1}<color:#555555>.",
+                    "Você alimentou #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.FEED_SETED_BY,
-                    "Você foi alimentado por <color:#00aaaa>{1}<color:#555555>.",
+                    "Você foi alimentado por #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.FEED_SETED,
-                    "Você alimentou-se<color:#555555>."
+                    "Você alimentou-se#555555."
             );
             addMessage(Messages.THOR_SETED_TO,
-                    "Você chamou o Thor para punir <color:#00aaaa>{1}<color:#555555>.",
+                    "Você chamou o Thor para punir #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.THOR_SETED_BY,
-                    "Você foi punido por <color:#00aaaa>{1}<color:#555555>.",
+                    "Você foi punido por #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.LEFT_PVP,
-                    "Você saiu do PvP<color:#555555>."
+                    "Você saiu do PvP#555555."
             );
             addMessage(Messages.ENTERED_PVP,
-                    "Você entrou em PvP<color:#555555>."
+                    "Você entrou em PvP#555555."
             );
             addMessage(Messages.FLY_DISABLED_ENTERED_PVP,
-                    "Vôo desativado por estar em PvP<color:#555555>."
+                    "Vôo desativado por estar em PvP#555555."
             );
             addMessage(Messages.FLY_DISABLED_TO,
-                    "Você desativou o vôo de <color:#00aaaa>{1}<color:#555555>.",
+                    "Você desativou o vôo de #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.FLY_DISABLED_BY,
-                    "Vôo desativado por <color:#00aaaa>{1}<color:#555555>.",
+                    "Vôo desativado por #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.FLY_ENABLED_TO,
-                    "Você ativou o vôo de <color:#00aaaa>{1}<color:#555555>.",
+                    "Você ativou o vôo de #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.FLY_ENABLED_BY,
-                    "Vôo ativado por <color:#00aaaa>{1}<color:#555555>.",
+                    "Vôo ativado por #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.FLY_PVP_BLOCKED,
-                    "Você não pode ativar o vôo em PvP<color:#555555>."
+                    "Você não pode ativar o vôo em PvP#555555."
             );
             addMessage(Messages.FLY_WORLD_BLOCKED,
-                    "Você não pode ativar o vôo nesse mundo<color:#555555>."
+                    "Você não pode ativar o vôo nesse mundo#555555."
             );
             addMessage(Messages.FLY_DISABLED,
-                    "Você desativou o vôo<color:#555555>."
+                    "Você desativou o vôo#555555."
             );
             addMessage(Messages.FLY_ENABLED,
-                    "Você ativou o vôo<color:#555555>."
+                    "Você ativou o vôo#555555."
             );
             addMessage(Messages.SERVER_TPS,
-                    "TPS<color:#555555>: <color:#00aaaa>{0}<color:#555555>.",
+                    "TPS#555555: #00aaaa{0}#555555.",
                     "valor do TPS"
             );
             addMessage(Messages.SERVER_LOGIN,
-                    "<color:#00aaaa>{1} <color:#555555>[<color:#55FF55>+<color:#555555>]",
+                    "#00aaaa{1} #555555[#55FF55+#555555]",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.SERVER_LOGOUT,
-                    "<color:#00aaaa>{1} <color:#555555>[<color:#FF5555>-<color:#555555>]",
+                    "#00aaaa{1} #555555[#FF5555-#555555]",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.ALREADY_IN_TIMING,
-                    "Você já está em um processo de teleporte<color:#555555>."
+                    "Você já está em um processo de teleporte#555555."
             );
             addMessage(Messages.ALREADY_IN_CONFIRMATION,
-                    "Você já está em um processo de confirmação<color:#555555>."
+                    "Você já está em um processo de confirmação#555555."
             );
         }
 
@@ -496,8 +482,6 @@ final class Configurations {
         private final FileConfiguration inFile;
         private final FileConfiguration outFile;
 
-        private final CommandLocale[] commandsLocalesArray;
-
         private final boolean[] booleans;
         private final int[] integers;
         private final String[] strings;
@@ -508,7 +492,6 @@ final class Configurations {
         protected MainConfiguration(EterniaServer plugin, Map<String, CommandData> commandDataMap) {
             this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
             this.outFile = new YamlConfiguration();
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
 
             this.booleans = plugin.booleans();
             this.integers = plugin.integers();
@@ -547,16 +530,6 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
-        }
-
-        @Override
         public ConfigurationCategory category() {
             return ConfigurationCategory.BLOCKED;
         }
@@ -590,7 +563,6 @@ final class Configurations {
             strings[Strings.DATA_FORMAT.ordinal()] = inFile.getString("format.data-time", "dd/MM/yyyy HH:mm");
             strings[Strings.MINI_MESSAGES_SERVER_SERVER_LIST.ordinal()] = inFile.getString("mini-messages.motd", "            <color:#69CEDB>⛏ <gradient:#111111:#112222>❱---❰</gradient> <gradient:#6FE657:#6892F2>EterniaServer</gradient> <gradient:#112222:#111111>❱---❰</gradient> <color:#69CEDB>⛏\n                     <gradient:#926CEB:#6892F2>COMEBACK UPDATE</gradient>");
             strings[Strings.PERM_AFK.ordinal()] = inFile.getString("afk.perm-to-stay-afk", "eternia.afk");
-            strings[Strings.SERVER_PREFIX.ordinal()] = inFile.getString("mini-messages.prefix", "<color:#555555>[<color:#34eb40>E<color:#3471eb>S<color:#555555>]<color:#AAAAAA> ");
             strings[Strings.PERM_TIMING_BYPASS.ordinal()] = inFile.getString("teleport.timing-bypass", "eternia.timing.bypass");
             strings[Strings.GUI_SECRET.ordinal()] = inFile.getString("secret.value", String.format("#%06x", new Random().nextInt(0xffffff + 1)));
             strings[Strings.PERM_EC_OTHER.ordinal()] = inFile.getString("permissions.ec-other", "eternia.enderchest.other");
@@ -600,17 +572,17 @@ final class Configurations {
             strings[Strings.CONS_CREATIVE.ordinal()] = inFile.getString("const.gm.creative", "criativo");
             strings[Strings.CONS_SPECTATOR.ordinal()] = inFile.getString("const.gm.spectator", "espectador");
             strings[Strings.CONS_SURVIVAL.ordinal()] = inFile.getString("const.gm.survival", "sobrevivência");
-            strings[Strings.PROFILE_PLAYED_TIME.ordinal()] = inFile.getString("mini-messages.profile.played-time", "<color:#aaaaaa>Dias<color:#555555>: <color:#00aaaa>%02d <color:#aaaaaa>Horas<color:#555555>: <color:#00aaaa>%02d <color:#aaaaaa>Minutos<color:#555555>: <color:#00aaaa>%02d<color:#555555>.");
+            strings[Strings.PROFILE_PLAYED_TIME.ordinal()] = inFile.getString("mini-messages.profile.played-time", "#aaaaaaDias#555555: #00aaaa%02d #aaaaaaHoras#555555: #00aaaa%02d #aaaaaaMinutos#555555: #00aaaa%02d#555555.");
             strings[Strings.PERM_FLY_OTHER.ordinal()] = inFile.getString("permissions.fly.other", "eternia.fly.other");
             strings[Strings.PERM_FLY_BYPASS.ordinal()] = inFile.getString("permissions.fly.bypass", "eternia.fly.bypass");
-            strings[Strings.JOIN_NAMES.ordinal()] = inFile.getString("messages.join-names-display", "<color:#00aaaa>{0}<color:#AAAAAA>, ");
+            strings[Strings.JOIN_NAMES.ordinal()] = inFile.getString("messages.join-names-display", "#00aaaa{0}#AAAAAA, ");
             strings[Strings.PERM_BASE_COMMAND.ordinal()] = inFile.getString("permissions.base-command", "eternia.");
 
             // Lists
             List<String> blackedCommands = inFile.getStringList("critical-configs.blocked-commands");
             stringLists.set(Lists.BLACKLISTED_COMMANDS.ordinal(), blackedCommands.isEmpty() ? List.of("/op", "/deop", "/stop") : blackedCommands);
             List<String> profileMessages = inFile.getStringList("mini-messages.profile.custom-messages");
-            stringLists.set(Lists.PROFILE_CUSTOM_MESSAGES.ordinal(), profileMessages.isEmpty() ? List.of("<color:#aaaaaa>Saldo em C.A.S.H.<color:#555555>: <color:#00aaaa>%eterniaserver_cash%<color:#555555>.") : profileMessages);
+            stringLists.set(Lists.PROFILE_CUSTOM_MESSAGES.ordinal(), profileMessages.isEmpty() ? List.of("#aaaaaaSaldo em C.A.S.H.#555555: #00aaaa%eterniaserver_cash%#555555.") : profileMessages);
             List<String> flyBlockedWorlds = inFile.getStringList("critical-configs.blocked-worlds-fly");
             stringLists.set(Lists.BLACKLISTED_WORLDS_FLY.ordinal(), flyBlockedWorlds.isEmpty() ? List.of("world_nether", "world_the_end") : flyBlockedWorlds);
 
@@ -620,7 +592,7 @@ final class Configurations {
                             "Informa o link do discord",
                             new ArrayList<>(),
                             new ArrayList<>(),
-                            List.of("<color:#555555>[<color:#34eb40>E<color:#3471eb>S<color:#555555>]<color:#AAAAAA> Entre em nosso discord<color:#555555>: <color:#00aaaa><a:https://discord.gg/Qs3RxMq>EterniaServer</a><color:#555555>."),
+                            List.of("#555555[#34eb40E#3471ebS#555555]#AAAAAA Entre em nosso discord#555555: #00aaaa<a:https://discord.gg/Qs3RxMqEterniaServer</a#555555."),
                             false
                     )
             );
@@ -630,7 +602,7 @@ final class Configurations {
                             "Informa o link do facebook",
                             new ArrayList<>(),
                             new ArrayList<>(),
-                            List.of("<color:#555555>[<color:#34eb40>E<color:#3471eb>S<color:#555555>]<color:#AAAAAA> Curta nossa página no facebook<color:#555555>: <color:#00aaaa><a:https://www.facebook.com/EterniaServer>EterniaServer</a><color:#555555>."),
+                            List.of("#555555[#34eb40E#3471ebS#555555]#AAAAAA Curta nossa página no facebook#555555: #00aaaa<a:https://www.facebook.com/EterniaServerEterniaServer</a#555555."),
                             false
                     )
             );
@@ -721,7 +693,6 @@ final class Configurations {
             outFile.set("permissions.ec-other", strings[Strings.PERM_EC_OTHER.ordinal()]);
             outFile.set("table-name.revision", strings[Strings.REVISION_TABLE_NAME.ordinal()]);
             outFile.set("table-name.player-profile", strings[Strings.PROFILE_TABLE_NAME.ordinal()]);
-            outFile.set("mini-messages.prefix", strings[Strings.SERVER_PREFIX.ordinal()]);
             outFile.set("mini-messages.profile.played-time", strings[Strings.PROFILE_PLAYED_TIME.ordinal()]);
             outFile.set("permissions.fly.other", strings[Strings.PERM_FLY_OTHER.ordinal()]);
             outFile.set("permissions.fly.bypass", strings[Strings.PERM_FLY_BYPASS.ordinal()]);

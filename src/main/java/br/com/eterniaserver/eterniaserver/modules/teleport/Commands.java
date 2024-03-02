@@ -4,6 +4,7 @@ import br.com.eterniaserver.acf.BaseCommand;
 import br.com.eterniaserver.acf.annotation.*;
 import br.com.eterniaserver.acf.bukkit.contexts.OnlinePlayer;
 import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
@@ -11,6 +12,7 @@ import br.com.eterniaserver.eterniaserver.enums.Strings;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
 import br.com.eterniaserver.eterniaserver.modules.teleport.Entities.HomeLocation;
 import br.com.eterniaserver.eterniaserver.modules.core.Entities.PlayerProfile;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,6 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 final class Commands {
 
@@ -49,10 +52,10 @@ final class Commands {
         public void onSpawn(Player player) {
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                 if (warpService.teleportTo(player, "spawn")) {
-                    plugin.sendMiniMessages(player, Messages.SPAWN_TELEPORTING);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.SPAWN_TELEPORTING);
                     return;
                 }
-                plugin.sendMiniMessages(player, Messages.SPAWN_NOT_DEFINED);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.SPAWN_NOT_DEFINED);
             });
         }
 
@@ -69,7 +72,8 @@ final class Commands {
                 str.setLength(str.length() - 2);
             }
 
-            plugin.sendMiniMessages(player, Messages.WARP_LIST, str.toString());
+            MessageOptions options = new MessageOptions(str.toString());
+            EterniaLib.getChatCommons().sendMessage(player, Messages.WARP_LIST, options);
         }
 
         @CommandAlias("%WARP")
@@ -81,11 +85,13 @@ final class Commands {
             String warpName = nome.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
 
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                MessageOptions options = new MessageOptions(warpName);
                 if (warpService.teleportTo(player, warpName)) {
-                    plugin.sendMiniMessages(player, Messages.WARP_TELEPORTING, warpName);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.WARP_TELEPORTING, options);
                     return;
                 }
-                plugin.sendMiniMessages(player, Messages.WARP_NOT_FOUND, warpName);
+
+                EterniaLib.getChatCommons().sendMessage(player, Messages.WARP_NOT_FOUND, options);
             });
         }
 
@@ -98,11 +104,13 @@ final class Commands {
             String warpName = nome.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
 
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                MessageOptions options = new MessageOptions(warpName);
                 if (warpService.createWarp(warpName, player.getLocation())) {
-                    plugin.sendMiniMessages(player, Messages.WARP_CREATED, warpName);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.WARP_CREATED, options);
                     return;
                 }
-                plugin.sendMiniMessages(player, Messages.WARP_UPDATED, warpName);
+
+                EterniaLib.getChatCommons().sendMessage(player, Messages.WARP_UPDATED, options);
             });
         }
 
@@ -115,11 +123,13 @@ final class Commands {
             String warpName = nome.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
 
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                MessageOptions options = new MessageOptions(warpName);
                 if (warpService.deleteWarp(warpName)) {
-                    plugin.sendMiniMessages(player, Messages.WARP_DELETED, warpName);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.WARP_DELETED, options);
                     return;
                 }
-                plugin.sendMiniMessages(player, Messages.WARP_NOT_FOUND, warpName);
+
+                EterniaLib.getChatCommons().sendMessage(player, Messages.WARP_NOT_FOUND, options);
             });
         }
     }
@@ -143,8 +153,11 @@ final class Commands {
             PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, player.getUniqueId());
             PlayerProfile targetProfile = EterniaLib.getDatabase().get(PlayerProfile.class, target.getUniqueId());
 
-            plugin.sendMiniMessages(target, Messages.TPA_REQUESTED_FROM, playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
-            plugin.sendMiniMessages(player, Messages.TPA_REQUESTED_TO, targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
+            MessageOptions targetOptions = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+            EterniaLib.getChatCommons().sendMessage(target, Messages.TPA_REQUESTED_FROM, targetOptions);
+
+            MessageOptions playerOptions = new MessageOptions(targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
+            EterniaLib.getChatCommons().sendMessage(player, Messages.TPA_REQUESTED_TO, playerOptions);
 
             Utils.TpaCommand tpaCommand = new Utils.TpaCommand(
                     target,
@@ -159,7 +172,7 @@ final class Commands {
 
             boolean result = EterniaLib.getAdvancedCmdManager().addConfirmationCommand(tpaCommand);
             if (!result) {
-                plugin.sendMiniMessages(player, Messages.ALREADY_IN_CONFIRMATION);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.ALREADY_IN_CONFIRMATION);
             }
         }
 
@@ -174,8 +187,11 @@ final class Commands {
             PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, player.getUniqueId());
             PlayerProfile targetProfile = EterniaLib.getDatabase().get(PlayerProfile.class, target.getUniqueId());
 
-            plugin.sendMiniMessages(target, Messages.TPA_HERE_REQUESTED_FROM, playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
-            plugin.sendMiniMessages(player, Messages.TPA_HERE_REQUESTED_TO, targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
+            MessageOptions targetOptions = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+            EterniaLib.getChatCommons().sendMessage(target, Messages.TPA_HERE_REQUESTED_FROM, targetOptions);
+
+            MessageOptions playerOptions = new MessageOptions(targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
+            EterniaLib.getChatCommons().sendMessage(player, Messages.TPA_HERE_REQUESTED_TO, playerOptions);
 
             Utils.TpaCommand tpaCommand = new Utils.TpaCommand(
                     target,
@@ -190,7 +206,7 @@ final class Commands {
 
             boolean result = EterniaLib.getAdvancedCmdManager().addConfirmationCommand(tpaCommand);
             if (!result) {
-                plugin.sendMiniMessages(player, Messages.ALREADY_IN_CONFIRMATION);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.ALREADY_IN_CONFIRMATION);
             }
         }
 
@@ -211,6 +227,8 @@ final class Commands {
         private final EterniaServer plugin;
         private final Services.HomeService homeService;
 
+        private final Pattern LOCATION_NAME_REGEX = Pattern.compile("[^a-zA-Z0-9]");
+
         public Home(EterniaServer plugin, Services.HomeService homeService) {
             this.plugin = plugin;
             this.homeService = homeService;
@@ -224,15 +242,16 @@ final class Commands {
         public void onDelHome(Player player, String nome) {
             List<HomeLocation> homes = homeService.getHomes(player.getUniqueId());
 
+            MessageOptions options = new MessageOptions(nome);
             for (HomeLocation home : homes) {
                 if (home.getName().equalsIgnoreCase(nome)) {
                     homeService.removeHome(home);
-                    plugin.sendMiniMessages(player, Messages.HOME_DELETED, nome);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_DELETED, options);
                     return;
                 }
             }
 
-            plugin.sendMiniMessages(player, Messages.HOME_NOT_FOUND, nome);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_NOT_FOUND, options);
         }
 
         @CommandAlias("%HOME")
@@ -241,13 +260,14 @@ final class Commands {
         @CommandPermission("%HOME_PERM")
         @CommandCompletion("@homes")
         public void onHome(Player player, String nome, @Optional OnlinePlayer onlineTarget) {
+            MessageOptions options = new MessageOptions(nome);
             if (onlineTarget == null) {
                 List<HomeLocation> homes = homeService.getHomes(player.getUniqueId());
                 if (teleportToHome(homes, nome, player, plugin)) {
                     return;
                 }
 
-                plugin.sendMiniMessages(player, Messages.HOME_NOT_FOUND, nome);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_NOT_FOUND, options);
                 return;
             }
 
@@ -258,11 +278,11 @@ final class Commands {
                     return;
                 }
 
-                plugin.sendMiniMessages(player, Messages.HOME_NOT_FOUND, nome);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_NOT_FOUND, options);
                 return;
             }
 
-            plugin.sendMiniMessages(player, Messages.SERVER_NO_PERM);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.SERVER_NO_PERM);
         }
 
         private boolean teleportToHome(List<HomeLocation> homes, String nome, Player player, EterniaServer plugin) {
@@ -296,7 +316,7 @@ final class Commands {
                 return;
             }
 
-            plugin.sendMiniMessages(player, Messages.SERVER_NO_PERM);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.SERVER_NO_PERM);
         }
 
         private void showHomes(Player player, Player target) {
@@ -309,7 +329,8 @@ final class Commands {
                 str.setLength(str.length() - 2);
             }
 
-            plugin.sendMiniMessages(player, Messages.HOME_LIST, str.toString());
+            MessageOptions options = new MessageOptions(str.toString());
+            EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_LIST, options);
         }
 
         @CommandAlias("%SETHOME")
@@ -324,15 +345,17 @@ final class Commands {
                 }
             }
 
-            nome = nome.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+            nome = LOCATION_NAME_REGEX.matcher(nome).replaceAll("").toLowerCase();
             if (nome.length() > 16) {
-                plugin.sendMiniMessages(player, Messages.HOME_STRING_LIMIT, String.valueOf(16));
+                MessageOptions options = new MessageOptions(String.valueOf(16));
+                EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_STRING_LIMIT, options);
                 return;
             }
 
             List<HomeLocation> homes = homeService.getHomes(player.getUniqueId());
             Location location = player.getLocation();
 
+            MessageOptions options = new MessageOptions(String.valueOf(16));
             if (existHome(nome, homes)) {
                 for (HomeLocation home : homes) {
                     if (home.getName().equalsIgnoreCase(nome)) {
@@ -347,7 +370,7 @@ final class Commands {
                         break;
                     }
                 }
-                plugin.sendMiniMessages(player, Messages.HOME_CREATED, nome);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_CREATED, options);
                 return;
             } else if (homes.size() < i) {
                 HomeLocation home = new HomeLocation(
@@ -361,19 +384,20 @@ final class Commands {
                         (double) location.getPitch()
                 );
                 homeService.addHome(home);
-                plugin.sendMiniMessages(player, Messages.HOME_CREATED, nome);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_CREATED, options);
                 return;
             }
 
             if (!player.hasPermission(plugin.getString(Strings.PERM_HOME_COMPASS))) {
-                plugin.sendMiniMessages(player, Messages.HOME_NO_PERM_TO_COMPASS);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_NO_PERM_TO_COMPASS);
                 return;
             }
 
             ItemStack item = new ItemStack(Material.COMPASS);
             ItemMeta meta = item.getItemMeta();
 
-            meta.displayName(plugin.getMiniMessage(Messages.HOME_ITEM_NAME, false, nome));
+            MessageOptions compassOption = new MessageOptions(false, nome);
+            meta.displayName(EterniaLib.getChatCommons().parseMessage(Messages.HOME_ITEM_NAME, compassOption));
             meta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.TAG_FUNCTION), PersistentDataType.INTEGER, 1);
             meta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.TAG_WORLD), PersistentDataType.STRING, location.getWorld().getName());
             meta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.TAG_COORD_X), PersistentDataType.DOUBLE, location.getX());
@@ -385,7 +409,7 @@ final class Commands {
             item.setItemMeta(meta);
 
             player.getInventory().addItem(item);
-            plugin.sendMiniMessages(player, Messages.HOME_LIMIT_REACHED);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.HOME_LIMIT_REACHED, options);
         }
 
 

@@ -1,8 +1,11 @@
 package br.com.eterniaserver.eterniaserver.modules.chat;
 
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.Booleans;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
@@ -29,17 +32,15 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class ChatMessages implements ReloadableConfiguration {
+    static class ChatMessages implements MsgConfiguration<Messages> {
 
-        private final EterniaServer plugin;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final MessageMap<Messages, String> messageMap;
 
-        public ChatMessages(EterniaServer plugin) {
-            this.plugin = plugin;
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
+        public ChatMessages(MessageMap<Messages, String> messageMap) {
+            this.messageMap = messageMap;
         }
 
         @Override
@@ -63,13 +64,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -80,7 +76,7 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.CHAT_TELL,
-                    "<color:#555555>[<color:#DF9719>TELL<color:#555555>] <color:#00aaaa>{2} <color:#DF9719>-> <color:#00aaaa>{4}<color:#555555>: <color:#DF9719>{0}",
+                    "#555555[#DF9719TELL#555555] #00aaaa{2} #DF9719- #00aaaa{4}#555555: #DF9719{0}",
                     "mensagem",
                     "nome do remetente",
                     "apelido do remetente",
@@ -88,7 +84,7 @@ final class Configurations {
                     "apelido do destinatário"
             );
             addMessage(Messages.CHAT_SPY_TELL,
-                    "<color:#555555>[<color:#505050>TELL-SPY<color:#555555>] <color:#00aaaa>{2} <color:#505050>-> <color:#00aaaa>{4}<color:#555555>: <color:#505050>{0}",
+                    "#555555[#505050TELL-SPY#555555] #00aaaa{2} #505050- #00aaaa{4}#555555: #505050{0}",
                     "mensagem",
                     "nome do remetente",
                     "apelido do remetente",
@@ -96,93 +92,93 @@ final class Configurations {
                     "apelido do destinatário"
             );
             addMessage(Messages.CHAT_TELL_NO_PLAYER,
-                    "O jogador que você estava conversando se desconectou<color:#555555>."
+                    "O jogador que você estava conversando se desconectou#555555."
             );
             addMessage(Messages.CHAT_SPY_LOCAL,
-                    "<color:#555555>[<color:#F7F764>LOCAL-SPY<color:#555555>] <color:#00aaaa>{2}<color:#555555>: <color:#F7F764>{0}",
+                    "#555555[#F7F764LOCAL-SPY#555555] #00aaaa{2}#555555: #F7F764{0}",
                     "mensagem",
                     "nome do remetente",
                     "apelido do remetente"
             );
             addMessage(Messages.CHAT_NO_ONE_NEAR,
-                    "Não há ninguém por perto para ouvir você<color:#555555>."
+                    "Não há ninguém por perto para ouvir você#555555."
             );
             addMessage(Messages.CHAT_CHANNEL_CHANGED,
-                    "Você entrou no canal <color:#00aaaa>{0}<color:#555555>.",
+                    "Você entrou no canal #00aaaa{0}#555555.",
                     "nome do canal"
             );
             addMessage(Messages.CHAT_SPY_DISABLED,
-                    "Você desativou o modo espião<color:#555555>."
+                    "Você desativou o modo espião#555555."
             );
             addMessage(Messages.CHAT_SPY_ENABLED,
-                    "Você ativou o modo espião<color:#555555>."
+                    "Você ativou o modo espião#555555."
             );
             addMessage(Messages.CHAT_ARE_MUTED,
-                    "Você está silenciado por <color:#00aaaa>{0}<color:#aaaaaa> segundos<color:#555555>.",
+                    "Você está silenciado por #00aaaa{0}#aaaaaa segundos#555555.",
                     "segundos silenciado"
             );
             addMessage(Messages.CHAT_NO_ONE_TO_RESP,
-                    "Não há ninguém para responder<color:#555555>."
+                    "Não há ninguém para responder#555555."
             );
             addMessage(Messages.CHAT_TELL_UNLOCKED,
-                    "Você parou de conversar com <color:#00aaaa>{1}<color:#555555>.",
+                    "Você parou de conversar com #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.CHAT_TELL_LOCKED,
-                    "Você está conversando com <color:#00aaaa>{1}<color:#555555>.",
+                    "Você está conversando com #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.CHAT_TELL_YOURSELF,
-                    "Você não pode conversar com você mesmo<color:#555555>."
+                    "Você não pode conversar com você mesmo#555555."
             );
             addMessage(Messages.NICKNAME_REMOVED,
-                    "Você removeu o seu apelido<color:#555555>."
+                    "Você removeu o seu apelido#555555."
             );
             addMessage(Messages.NICKNAME_UPDATED,
-                    "Você definiu o seu apelido para <color:#00aaaa>{0}<color:#555555>.",
+                    "Você definiu o seu apelido para #00aaaa{0}#555555.",
                     "novo apelido"
             );
             addMessage(Messages.NICKNAME_REMOVED_BY,
-                    "O jogador <color:#00aaaa>{1}<color:#aaaaaa> removeu o seu apelido<color:#555555>.",
+                    "O jogador #00aaaa{1}#aaaaaa removeu o seu apelido#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.NICKNAME_REMOVED_FOR,
-                    "Você removeu o apelido de <color:#00aaaa>{1}<color:#555555>.",
+                    "Você removeu o apelido de #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.NICKNAME_UPDATED_BY,
-                    "O jogador <color:#00aaaa>{2}<color:#aaaaaa> definiu o seu apelido para <color:#00aaaa>{0}<color:#555555>.",
+                    "O jogador #00aaaa{2}#aaaaaa definiu o seu apelido para #00aaaa{0}#555555.",
                     "nome do jogador",
                     "novo apelido"
             );
             addMessage(Messages.NICKNAME_UPDATED_FOR,
-                    "Você definiu o apelido de <color:#00aaaa>{2}<color:#aaaaaa> para <color:#00aaaa>{0}<color:#555555>.",
+                    "Você definiu o apelido de #00aaaa{2}#aaaaaa para #00aaaa{0}#555555.",
                     "nome do jogador",
                     "novo apelido"
             );
             addMessage(Messages.CHAT_CHANNELS_MUTED,
-                    "Todos os canais de chat estão silenciados<color:#555555>."
+                    "Todos os canais de chat estão silenciados#555555."
             );
             addMessage(Messages.CHAT_CHANNELS_DISABLED,
-                    "Todos os canais foram mutados por <color:#00aaaa>{1}<color:#555555>.",
+                    "Todos os canais foram mutados por #00aaaa{1}#555555.",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.CHAT_CHANNELS_MUTED_TEMP,
-                    "Todos os canais foram mutados por <color:#00aaaa>{0} minuto(s)<color:#aaaaaa> pelo <color:#00aaaa>{2}<color:#555555>.",
+                    "Todos os canais foram mutados por #00aaaa{0} minuto(s)#aaaaaa pelo #00aaaa{2}#555555.",
                     "tempo em segundos",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.CHAT_CHANNELS_ENABLED,
-                    "Todos os canais foram desmutados<color:#555555>."
+                    "Todos os canais foram desmutados#555555."
             );
             addMessage(Messages.CHAT_BROADCAST_MUTE,
-                    "O jogador <color:#00aaaa>{1}<color:#aaaaaa> foi mutado permanentemente por <color:#00aaaa>{3}<color:#555555>, <color:#aaaaaa>mensagem<color:#555555>: <color:#00aaaa>{4}<color:#555555>.",
+                    "O jogador #00aaaa{1}#aaaaaa foi mutado permanentemente por #00aaaa{3}#555555, #aaaaaamensagem#555555: #00aaaa{4}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "nome da pessoa que mutou",
@@ -190,14 +186,14 @@ final class Configurations {
                     "mensagem"
             );
             addMessage(Messages.CHAT_BROADCAST_UNMUTE,
-                    "O jogador <color:#00aaaa>{1}<color:#aaaaaa> foi desmutado<color:#aaaaaa> por <color:#00aaaa>{3}<color:#555555>.",
+                    "O jogador #00aaaa{1}#aaaaaa foi desmutado#aaaaaa por #00aaaa{3}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "nome da pessoa que desmutou",
                     "apelido da pessoa que desmutou"
             );
             addMessage(Messages.CHAT_BROADCAST_TEMP_MUTE,
-                    "O jogador <color:#00aaaa>{1}<color:#aaaaaa> foi mutado por <color:#00aaaa>{4} minutos<color:#aaaaaa> por <color:#00aaaa>{3}<color:#555555>, <color:#aaaaaa>mensagem<color:#555555>: <color:#00aaaa>{5}<color:#555555>.",
+                    "O jogador #00aaaa{1}#aaaaaa foi mutado por #00aaaa{4} minutos#aaaaaa por #00aaaa{3}#555555, #aaaaaamensagem#555555: #00aaaa{5}#555555.",
                     "nome do jogador",
                     "apelido do jogador",
                     "nome da pessoa que mutou",
@@ -212,19 +208,10 @@ final class Configurations {
 
     }
 
-    static class ChatCommand implements ReloadableConfiguration {
+    static class ChatCommand implements CmdConfiguration<Enums.Commands> {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
-
-        private final CommandLocale[] commandsLocalesArray;
-
-        public ChatCommand() {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-        }
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         @Override
         public FileConfiguration inFileConfiguration() {
@@ -244,16 +231,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.CHAT_COMMANDS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override
@@ -356,15 +333,13 @@ final class Configurations {
 
     static class ChatChannels implements ReloadableConfiguration {
 
-        private final EterniaServer plugin;
 
         private final FileConfiguration inFile;
         private final FileConfiguration outFile;
 
         private final CraftChat craftChatService;
 
-        public ChatChannels(EterniaServer plugin, CraftChat craftChatService) {
-            this.plugin = plugin;
+        public ChatChannels(CraftChat craftChatService) {
             this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
             this.outFile = new YamlConfiguration();
             this.craftChatService = craftChatService;
@@ -388,16 +363,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.CHAT_CHANNELS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
         }
 
         @Override
@@ -472,13 +437,13 @@ final class Configurations {
             craftChatService.setFilter(Pattern.compile(filter));
 
             this.craftChatService.customPlaceholdersObjectsMap.put("prefix", new CustomPlaceholder("eternia.chat.default", "%vault_prefix%", "", "", 3, false));
-            this.craftChatService.customPlaceholdersObjectsMap.put("player", new CustomPlaceholder("eternia.chat.default", "%player_displayname%", "<color:#AAAAAA>Nome real<color:#555555>: <color:#00AAAA>%player_name%<color:#555555>.", "/profile %player_name%", 4, false));
-            this.craftChatService.customPlaceholdersObjectsMap.put("separator", new CustomPlaceholder("eternia.chat.default", " <color:#555555>➤", "", "", 6, true));
-            this.craftChatService.customPlaceholdersObjectsMap.put("suffix", new CustomPlaceholder("eternia.chat.default", "%vault_suffix% ", "<color:#AAAAAA>Clique para enviar uma mensagem<color:#555555>.", "/msg %player_name% ", 2, false));
-            this.craftChatService.customPlaceholdersObjectsMap.put("clan", new CustomPlaceholder("eternia.chat.default", "%simpleclans_tag_label%", "<color:#555555>Clan<color:#555555>: <color:#00AAAA>%simpleclans_clan_name%<color:#555555>.", "", 1, false));
-            this.craftChatService.customPlaceholdersObjectsMap.put("global", new CustomPlaceholder("eternia.chat.global", "<color:#555555>[<color:#ffffff>G<color:#555555>]", "<color:#AAAAAA>Clique para entrar no <color:#ffffff>Global<color:#555555>.", "/global", 0, true));
-            this.craftChatService.customPlaceholdersObjectsMap.put("local", new CustomPlaceholder("eternia.chat.local", "<color:#555555>[<color:#ffff55>L<color:#555555>]", "<color:#AAAAAA>Clique para entrar no <color:#ffff55>Local<color:#555555>.", "/local", 0, true));
-            this.craftChatService.customPlaceholdersObjectsMap.put("marry", new CustomPlaceholder("eternia.chat.default", "%eterniamarriage_statusheart%", "<color:#AAAAAA>Casado(a) com<color:#555555>: <color:#00AAAA>%eterniamarriage_partner%<color:#555555>.", "", 5, false));
+            this.craftChatService.customPlaceholdersObjectsMap.put("player", new CustomPlaceholder("eternia.chat.default", "%player_displayname%", "#AAAAAANome real#555555: #00AAAA%player_name%#555555.", "/profile %player_name%", 4, false));
+            this.craftChatService.customPlaceholdersObjectsMap.put("separator", new CustomPlaceholder("eternia.chat.default", " #555555➤", "", "", 6, true));
+            this.craftChatService.customPlaceholdersObjectsMap.put("suffix", new CustomPlaceholder("eternia.chat.default", "%vault_suffix% ", "#AAAAAAClique para enviar uma mensagem#555555.", "/msg %player_name% ", 2, false));
+            this.craftChatService.customPlaceholdersObjectsMap.put("clan", new CustomPlaceholder("eternia.chat.default", "%simpleclans_tag_label%", "#555555Clan#555555: #00AAAA%simpleclans_clan_name%#555555.", "", 1, false));
+            this.craftChatService.customPlaceholdersObjectsMap.put("global", new CustomPlaceholder("eternia.chat.global", "#555555[#ffffffG#555555]", "#AAAAAAClique para entrar no #ffffffGlobal#555555.", "/global", 0, true));
+            this.craftChatService.customPlaceholdersObjectsMap.put("local", new CustomPlaceholder("eternia.chat.local", "#555555[#ffff55L#555555]", "#AAAAAAClique para entrar no #ffff55Local#555555.", "/local", 0, true));
+            this.craftChatService.customPlaceholdersObjectsMap.put("marry", new CustomPlaceholder("eternia.chat.default", "%eterniamarriage_statusheart%", "#AAAAAACasado(a) com#555555: #00AAAA%eterniamarriage_partner%#555555.", "", 5, false));
 
             Map<String, CustomPlaceholder> tempCustomPlaceholdersMap = new HashMap<>();
             configurationSection = inFile.getConfigurationSection("placeholders");
@@ -553,16 +518,6 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
-        }
-
-        @Override
         public ConfigurationCategory category() {
             return ConfigurationCategory.WARNING_ADVICE;
         }
@@ -580,12 +535,13 @@ final class Configurations {
             strings[Strings.PERM_CHAT_BYPASS_PROTECTION.ordinal()] = inFile.getString("general.bypass-protection", "eternia.chat.bypass.protection");
             strings[Strings.PERM_SPY.ordinal()] = inFile.getString("general.spy", "eternia.chat.spy");
             strings[Strings.PERM_CHAT_MENTION.ordinal()] = inFile.getString("general.mention", "eternia.chat.mention");
-            strings[Strings.CONS_MENTION_TITLE.ordinal()] = inFile.getString("general.mention-title", "<color:#aaaaaa>Mencionado por <color:#00aaaa>{1}");
-            strings[Strings.CONS_MENTION_SUBTITLE.ordinal()] = inFile.getString("general.mention-subtitle", "<color:#aaaaaa>Acorda<color:#555555>!!!");
+            strings[Strings.CONS_MENTION_TITLE.ordinal()] = inFile.getString("general.mention-title", "#aaaaaaMencionado por #00aaaa{1}");
+            strings[Strings.CONS_MENTION_SUBTITLE.ordinal()] = inFile.getString("general.mention-subtitle", "#aaaaaaAcorda#555555!!!");
             strings[Strings.PERM_CHAT_ITEM.ordinal()] = inFile.getString("general.item", "eternia.chat.item");
             strings[Strings.CONS_SHOW_ITEM.ordinal()] = inFile.getString("general.show-item", "x{0} {1}");
             strings[Strings.CHAT_TABLE_NAME.ordinal()] = inFile.getString("general.table-name.chat", "e_chat_info");
             strings[Strings.CHAT_DEFAULT_TAG_COLOR.ordinal()] = inFile.getString("general.default-tag-color", "#1594AB");
+            strings[Strings.PERM_CHAT_COLOR.ordinal()] = inFile.getString("general.perm.color", "eternia.chat.color");
 
             craftChatService.updateTextColor();
 
@@ -603,6 +559,7 @@ final class Configurations {
             outFile.set("general.show-item", strings[Strings.CONS_SHOW_ITEM.ordinal()]);
             outFile.set("general.table-name.chat", strings[Strings.CHAT_TABLE_NAME.ordinal()]);
             outFile.set("general.default-tag-color", strings[Strings.CHAT_DEFAULT_TAG_COLOR.ordinal()]);
+            outFile.set("general.perm.color", strings[Strings.PERM_CHAT_COLOR.ordinal()]);
         }
 
         @Override

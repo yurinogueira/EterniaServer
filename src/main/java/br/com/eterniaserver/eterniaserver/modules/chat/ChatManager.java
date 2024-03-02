@@ -12,7 +12,9 @@ import br.com.eterniaserver.eterniaserver.modules.chat.Configurations.ChatComman
 import br.com.eterniaserver.eterniaserver.modules.chat.Configurations.ChatMessages;
 import br.com.eterniaserver.eterniaserver.modules.chat.Configurations.ChatChannels;
 import br.com.eterniaserver.eterniaserver.modules.chat.Entities.ChatInfo;
+
 import github.scarsz.discordsrv.DiscordSRV;
+
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
@@ -33,39 +35,25 @@ public class ChatManager implements Module {
 
     @Override
     public void loadConfigurations() {
-        ChatMessages messages = new ChatMessages(plugin);
+        ChatMessages messages = new ChatMessages(plugin.messages());
         ChatCommand commands = new ChatCommand();
-        ChatChannels channels = new ChatChannels(plugin, craftChatService);
+        ChatChannels channels = new ChatChannels(craftChatService);
         ChatConfiguration configuration = new ChatConfiguration(plugin, craftChatService);
 
-        EterniaLib.registerConfiguration("eterniaserver", "chat_messages", messages);
-        EterniaLib.registerConfiguration("eterniaserver", "chat_commands", commands);
-        EterniaLib.registerConfiguration("eterniaserver", "chat_channels", channels);
-        EterniaLib.registerConfiguration("eterniaserver", "chat", configuration);
-
-        messages.executeConfig();
-        channels.executeConfig();
-        configuration.executeConfig();
-
-        commands.executeCritical();
-        configuration.executeCritical();
-
-        messages.saveConfiguration(true);
-        channels.saveConfiguration(true);
-        commands.saveConfiguration(true);
-        configuration.saveConfiguration(true);
-
-        loadCommandsLocale(commands, Enums.Commands.class);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "chat_messages", true, messages);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "chat_commands", true, commands);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "chat_channels", true, channels);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "chat", true, configuration);
 
         try {
             Entity<ChatInfo> chatInfoEntity = new Entity<>(ChatInfo.class);
 
-            EterniaLib.addTableName("%eternia_server_chat%", plugin.getString(Strings.CHAT_TABLE_NAME));
+            EterniaLib.getDatabase().addTableName("%eternia_server_chat%", plugin.getString(Strings.CHAT_TABLE_NAME));
 
             EterniaLib.getDatabase().register(ChatInfo.class, chatInfoEntity);
         }
         catch (Exception exception) {
-            EterniaLib.registerLog("EE-103-Revision");
+            plugin.getLogger().log(Level.SEVERE, "Error while registering chat entity", exception);
             return;
         }
 
@@ -104,8 +92,8 @@ public class ChatManager implements Module {
 
     @Override
     public void loadCommands() {
-        EterniaLib.getCmdManager().registerCommand(new Commands.Mute(plugin, craftChatService));
-        EterniaLib.getCmdManager().registerCommand(new Commands.Generic(plugin, craftChatService));
+        EterniaLib.getCmdManager().registerCommand(new Commands.Mute(craftChatService));
+        EterniaLib.getCmdManager().registerCommand(new Commands.Generic(craftChatService));
         EterniaLib.getCmdManager().registerCommand(new Commands.Chat(plugin, craftChatService));
     }
 

@@ -1,11 +1,15 @@
 package br.com.eterniaserver.eterniaserver.modules.bed;
 
+import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.Integers;
 import br.com.eterniaserver.eterniaserver.enums.Lists;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
 import br.com.eterniaserver.eterniaserver.modules.bed.Services.SleepingService;
+
+import net.kyori.adventure.text.Component;
 
 import org.bukkit.Statistic;
 import org.bukkit.World;
@@ -30,7 +34,9 @@ final class Schedules {
             this.plugin = plugin;
             this.sleepingService = sleepingService;
             if (TimeUnit.MICROSECONDS.toSeconds(System.currentTimeMillis() - sleepingService.getNightMessageTime()) > 300) {
-                plugin.getServer().broadcast(plugin.getMiniMessage(Messages.NIGHT_SKIPPING, true, world.getName()));
+                MessageOptions options = new MessageOptions(world.getName());
+                Component message = EterniaLib.getChatCommons().parseMessage(Messages.NIGHT_SKIPPING, options);
+                plugin.getServer().broadcast(message);
             }
         }
 
@@ -48,7 +54,11 @@ final class Schedules {
                     world.setThundering(false);
                     world.getPlayers().forEach(player -> player.setStatistic(Statistic.TIME_SINCE_REST, 0));
                     plugin.getServer().getScheduler().runTaskLater(plugin, () -> sleepingService.removeFromSkipping(world), 20);
-                    plugin.getServer().broadcast(plugin.getMiniMessage(Messages.NIGHT_SKIPPED, true, world.getName()));
+
+                    MessageOptions options = new MessageOptions(world.getName());
+                    Component message = EterniaLib.getChatCommons().parseMessage(Messages.NIGHT_SKIPPED, options);
+                    plugin.getServer().broadcast(message);
+
                     sleepingService.updateNightMessageTime();
                     this.cancel();
                 } else {

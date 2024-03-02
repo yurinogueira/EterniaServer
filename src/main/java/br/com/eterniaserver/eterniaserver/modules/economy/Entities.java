@@ -7,6 +7,7 @@ import br.com.eterniaserver.eternialib.database.annotations.Table;
 import br.com.eterniaserver.eternialib.database.enums.FieldType;
 import br.com.eterniaserver.eternialib.database.enums.ReferenceMode;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

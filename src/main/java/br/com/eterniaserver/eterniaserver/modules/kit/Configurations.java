@@ -1,8 +1,11 @@
 package br.com.eterniaserver.eterniaserver.modules.kit;
 
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
 import br.com.eterniaserver.eterniaserver.enums.Strings;
@@ -23,17 +26,15 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class KitMessagesConfiguration implements ReloadableConfiguration {
+    static class KitMessagesConfiguration implements MsgConfiguration<Messages> {
 
-        private final String[] messages;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final MessageMap<Messages, String> messageMap;
 
-        public KitMessagesConfiguration(EterniaServer plugin) {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.messages = plugin.messages();
+        public KitMessagesConfiguration(MessageMap<Messages, String> messageMap) {
+            this.messageMap = messageMap;
         }
 
         @Override
@@ -57,13 +58,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return messages;
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -74,15 +70,15 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.KIT_LIST,
-                    "Lista de kits<color:#555555>: <color:#00aaaa>{0}<color:#555555>.",
+                    "Lista de kits#555555: #00aaaa{0}#555555.",
                     "lista de kits"
             );
             addMessage(Messages.KIT_NOT_FOUND,
-                    "O kit <color:#00aaaa>{0}<color:#AAAAAA> não foi encontrado<color:#555555>.",
+                    "O kit #00aaaa{0}#AAAAAA não foi encontrado#555555.",
                     "kit"
             );
             addMessage(Messages.KIT_IN_RECHARGE,
-                    "Você precisa esperar <color:#00aaaa>{0}s<color:#AAAAAA> para pegar o kit novamente<color:#555555>.",
+                    "Você precisa esperar #00aaaa{0}s#AAAAAA para pegar o kit novamente#555555.",
                     "cooldown"
             );
         }
@@ -91,18 +87,10 @@ final class Configurations {
         public void executeCritical() { }
     }
 
-    static class KitCommandsConfiguration implements ReloadableConfiguration {
+    static class KitCommandsConfiguration implements CmdConfiguration<Enums.Commands> {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
-
-        private final CommandLocale[] commandsLocalesArray;
-
-        public KitCommandsConfiguration() {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-        }
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         @Override
         public FileConfiguration inFileConfiguration() {
@@ -122,16 +110,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.KIT_COMMANDS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override
@@ -165,18 +143,15 @@ final class Configurations {
 
         private static final String KIT_PREFIX = "kits.";
 
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
+
         private final EterniaServer plugin;
         private final Services.KitService kitService;
-
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
 
         public KitConfiguration(EterniaServer plugin, Services.KitService kitService) {
             this.plugin = plugin;
             this.kitService = kitService;
-
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
         }
 
         @Override
@@ -200,16 +175,6 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
-        }
-
-        @Override
         public ConfigurationCategory category() {
             return ConfigurationCategory.GENERIC;
         }
@@ -225,7 +190,7 @@ final class Configurations {
                     new Utils.CustomKit(
                             300,
                             List.of("give %player_name% minecraft:golden_shovel 1"),
-                            List.of("<color:#555555>[<color:#34eb40>E<color:#3471eb>S<color:#555555>]<color:#AAAAAA> Toma sua pá<color:#555555>!")
+                            List.of("#555555[#34eb40E#3471ebS#555555]#AAAAAA Toma sua pá#555555!")
                     )
             );
 
@@ -260,9 +225,9 @@ final class Configurations {
 
             tempKitList.forEach((k, v) -> {
                 kitService.kitNames().add(k);
-                outFile.set(KIT_PREFIX + k + ".delay", v.getDelay());
-                outFile.set(KIT_PREFIX + k + ".command", v.getCommands());
-                outFile.set(KIT_PREFIX + k + ".text", v.getMessages());
+                outFile.set(KIT_PREFIX + k + ".delay", v.delay());
+                outFile.set(KIT_PREFIX + k + ".command", v.commands());
+                outFile.set(KIT_PREFIX + k + ".text", v.messages());
             });
         }
 

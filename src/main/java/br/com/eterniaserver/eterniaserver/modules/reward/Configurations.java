@@ -1,8 +1,11 @@
 package br.com.eterniaserver.eterniaserver.modules.reward;
 
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.ChanceMaps;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
@@ -23,18 +26,15 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class RewardMessagesConfiguration implements ReloadableConfiguration {
+    static class RewardMessagesConfiguration implements MsgConfiguration<Messages> {
 
-        private final EterniaServer plugin;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final MessageMap<Messages, String> messageMap;
 
-        public RewardMessagesConfiguration(EterniaServer plugin) {
-            this.plugin = plugin;
-
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
+        public RewardMessagesConfiguration(MessageMap<Messages, String> messageMap) {
+            this.messageMap = messageMap;
         }
 
         @Override
@@ -58,13 +58,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -75,15 +70,15 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.REWARD_INVALID_KEY,
-                    "A chave <color:#00aaaa>{0}<color:#aaaaaa> é inválida<color:#555555>.",
+                    "A chave #00aaaa{0}#aaaaaa é inválida#555555.",
                     "chave"
             );
             addMessage(Messages.REWARD_CREATED,
-                    "Reward criado com sucesso<color:#555555>, <color:#aaaaaa>chave<color:#555555>: <color:#00aaaa>{0}<color:#555555>.",
+                    "Reward criado com sucesso#555555, #aaaaaachave#555555: #00aaaa{0}#555555.",
                     "chave"
             );
             addMessage(Messages.REWARD_INVALID_KEY,
-                    "Não foi encontrado nenhum reward com o nome de <color:#00aaaa>{0}<color:#555555>.",
+                    "Não foi encontrado nenhum reward com o nome de #00aaaa{0}#555555.",
                     "reward"
             );
         }
@@ -92,18 +87,10 @@ final class Configurations {
         public void executeCritical() { }
     }
 
-    static class RewardCommandsConfiguration implements ReloadableConfiguration {
+    static class RewardCommandsConfiguration implements CmdConfiguration<Enums.Commands> {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
-
-        private final CommandLocale[] commandsLocalesArray;
-
-        public RewardCommandsConfiguration() {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-        }
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         @Override
         public FileConfiguration inFileConfiguration() {
@@ -123,16 +110,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.REWARDS_COMMANDS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override
@@ -164,16 +141,13 @@ final class Configurations {
 
     static class RewardConfiguration implements ReloadableConfiguration {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         private final String[] strings;
         private final List<Map<String, Map<Double, List<String>>>> chanceMap;
 
-
         protected RewardConfiguration(EterniaServer plugin) {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
             this.strings = plugin.strings();
             this.chanceMap = plugin.chanceMaps();
         }
@@ -196,16 +170,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.REWARDS_CONFIG_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
         }
 
         @Override

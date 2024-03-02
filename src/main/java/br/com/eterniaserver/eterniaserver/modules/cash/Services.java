@@ -1,7 +1,7 @@
 package br.com.eterniaserver.eterniaserver.modules.cash;
 
 import br.com.eterniaserver.eternialib.EterniaLib;
-import br.com.eterniaserver.eternialib.database.DatabaseInterface;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.api.interfaces.CashAPI;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
@@ -128,20 +128,21 @@ final class Services {
                 UUID uuid = player.getUniqueId();
 
                 if (messages == null || commands == null || cost == null || cashItem.containsKey(uuid)) {
-                    plugin.sendMiniMessages(player, Messages.CASH_ALREADY_BUYING);
-                    plugin.sendMiniMessages(player, Messages.CASH_CHOOSE);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.CASH_ALREADY_BUYING);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.CASH_CHOOSE);
                     player.closeInventory();
                     return 3;
                 }
 
                 BuyingItem buyingItem = new BuyingItem(messages, commands, cost);
+                MessageOptions options = new MessageOptions(String.valueOf(buyingItem.getCost()));
                 if (!EterniaServer.getCashAPI().has(uuid, buyingItem.getCost())) {
-                    plugin.sendMiniMessages(player, Messages.CASH_NO_HAS, String.valueOf(buyingItem.getCost()));
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.CASH_NO_HAS, options);
                     return 2;
                 }
 
-                plugin.sendMiniMessages(player, Messages.CASH_COST, String.valueOf(buyingItem.getCost()));
-                plugin.sendMiniMessages(player, Messages.CASH_CHOOSE);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.CASH_COST, options);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.CASH_CHOOSE);
                 cashItem.put(uuid, buyingItem);
                 player.closeInventory();
                 return 1;
@@ -153,14 +154,11 @@ final class Services {
 
     static class CraftCash implements CashAPI {
 
-        private final DatabaseInterface databaseInterface;
 
         private UUID uuidCache;
         private CashBalance cashBalance;
 
         protected CraftCash() {
-            this.databaseInterface = EterniaLib.getDatabase();
-
             this.uuidCache = null;
             this.cashBalance = null;
         }
@@ -168,7 +166,7 @@ final class Services {
         private CashBalance getCash(UUID uuid) {
             if (this.uuidCache == null || this.uuidCache != uuid) {
                 this.uuidCache = uuid;
-                this.cashBalance = databaseInterface.get(CashBalance.class, uuid);
+                this.cashBalance = EterniaLib.getDatabase().get(CashBalance.class, uuid);
             }
 
             return this.cashBalance;
@@ -185,7 +183,7 @@ final class Services {
                 CashBalance cash = getCash(uuid);
 
                 cash.setUuid(uuid);
-                databaseInterface.insert(CashBalance.class, cash);
+                EterniaLib.getDatabase().insert(CashBalance.class, cash);
 
                 return cash;
             });
@@ -218,18 +216,18 @@ final class Services {
 
             hasAccount(uuid).whenCompleteAsync((has, throwableVerify) -> {
                 if (throwableVerify != null) {
-                    EterniaLib.registerLog("EE-201-Cash-Verify");
+                    Bukkit.getLogger().warning("Error while verifying cash account." + throwableVerify.getMessage());
                     return;
                 }
 
                 if (Boolean.TRUE.equals(has)) {
-                    databaseInterface.update(CashBalance.class, cash);
+                    EterniaLib.getDatabase().update(CashBalance.class, cash);
                     return;
                 }
 
                 createAccount(uuid, amount).whenCompleteAsync((createCash, throwableCreate) -> {
                     if (throwableCreate != null) {
-                        EterniaLib.registerLog("EE-201-Cash-Create");
+                        Bukkit.getLogger().warning("Error while creating cash account." + throwableCreate.getMessage());
                         return;
                     }
 

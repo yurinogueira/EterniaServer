@@ -8,6 +8,8 @@ import br.com.eterniaserver.eterniaserver.enums.Strings;
 
 import org.bukkit.entity.Player;
 
+import java.util.logging.Level;
+
 public class TeleportManager implements Module {
 
     private final Services.HomeService homeService;
@@ -23,35 +25,25 @@ public class TeleportManager implements Module {
     @Override
     public void loadConfigurations() {
         Configurations.TeleportConfiguration configuration = new Configurations.TeleportConfiguration(plugin);
-        Configurations.TeleportMessagesConfiguration messages = new Configurations.TeleportMessagesConfiguration(plugin);
+        Configurations.TeleportMessagesConfiguration messages = new Configurations.TeleportMessagesConfiguration(plugin.messages());
         Configurations.TeleportCommandsConfiguration commands = new Configurations.TeleportCommandsConfiguration();
 
-        EterniaLib.registerConfiguration("eterniaserver", "teleport", configuration);
-        EterniaLib.registerConfiguration("eterniaserver", "teleport_messages", messages);
-        EterniaLib.registerConfiguration("eterniaserver", "teleport_commands", commands);
-
-        configuration.executeConfig();
-        messages.executeConfig();
-        commands.executeCritical();
-
-        configuration.saveConfiguration(true);
-        messages.saveConfiguration(true);
-        commands.saveConfiguration(true);
-
-        loadCommandsLocale(commands, Enums.Commands.class);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "teleport", true, configuration);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "teleport_messages", true, messages);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "teleport_commands", true, commands);
 
         try {
             Entity<Entities.HomeLocation> homeLocationEntity = new Entity<>(Entities.HomeLocation.class);
             Entity<Entities.WarpLocation> warpLocationEntity = new Entity<>(Entities.WarpLocation.class);
 
-            EterniaLib.addTableName("%eternia_home%", plugin.getString(Strings.TELEPORT_TABLE_NAME_HOME));
-            EterniaLib.addTableName("%eternia_warp%", plugin.getString(Strings.TELEPORT_TABLE_NAME_WARP));
+            EterniaLib.getDatabase().addTableName("%eternia_home%", plugin.getString(Strings.TELEPORT_TABLE_NAME_HOME));
+            EterniaLib.getDatabase().addTableName("%eternia_warp%", plugin.getString(Strings.TELEPORT_TABLE_NAME_WARP));
 
             EterniaLib.getDatabase().register(Entities.HomeLocation.class, homeLocationEntity);
             EterniaLib.getDatabase().register(Entities.WarpLocation.class, warpLocationEntity);
         }
         catch (Exception exception) {
-            EterniaLib.registerLog("EE-123-Teleport");
+            plugin.getLogger().log(Level.SEVERE, "Error while registering the database tables for the Teleport module {0}", exception.getMessage());
         }
 
         warpService.updateSpawnLocation();

@@ -1,5 +1,8 @@
 package br.com.eterniaserver.eterniaserver.modules.core;
 
+import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.ChatCommons;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.api.events.AfkStatusEvent;
 import br.com.eterniaserver.eterniaserver.api.interfaces.GUIAPI;
@@ -19,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 class TestServices {
@@ -87,18 +91,23 @@ class TestServices {
         Player player = Mockito.mock(Player.class);
         Entities.PlayerProfile playerProfile = Mockito.mock(Entities.PlayerProfile.class);
         PluginManager pluginManagement = Mockito.mock(PluginManager.class);
+        ChatCommons chatCommons = Mockito.mock(ChatCommons.class);
         Component globalMessages = Mockito.mock(Component.class);
 
         Mockito.when(playerProfile.getPlayerName()).thenReturn(playerName);
         Mockito.when(playerProfile.getPlayerDisplay()).thenReturn(playerDisplay);
         Mockito.when(playerProfile.isAfk()).thenReturn(true);
-        Mockito.when(plugin.getMiniMessage(Messages.AFK_LEAVE, true, playerName, playerDisplay)).thenReturn(globalMessages);
+        Mockito.when(chatCommons.parseMessage(Mockito.any(Messages.class), Mockito.any(MessageOptions.class))).thenReturn(globalMessages);
         Mockito.when(server.getPluginManager()).thenReturn(pluginManagement);
 
-        afkService.exitFromAfk(player, playerProfile, AfkStatusEvent.Cause.MOVE);
+        try (MockedStatic<EterniaLib> eterniaLibMockedStatic = Mockito.mockStatic(EterniaLib.class)) {
+            eterniaLibMockedStatic.when(EterniaLib::getChatCommons).thenReturn(chatCommons);
 
-        Mockito.verify(playerProfile, Mockito.times(1)).setLastMove(Mockito.anyLong());
-        Mockito.verify(server, Mockito.times(1)).broadcast(globalMessages);
+            afkService.exitFromAfk(player, playerProfile, AfkStatusEvent.Cause.MOVE);
+
+            Mockito.verify(playerProfile, Mockito.times(1)).setLastMove(Mockito.anyLong());
+            Mockito.verify(server, Mockito.times(1)).broadcast(globalMessages);
+        }
     }
 
     @Test
@@ -117,9 +126,10 @@ class TestServices {
         Player player = Mockito.mock(Player.class);
         Component titleComponent = Mockito.mock(Component.class);
         Inventory inventory = Mockito.mock(Inventory.class);
+        ChatCommons chatCommons = Mockito.mock(ChatCommons.class);
 
         Mockito.when(plugin.getString(Strings.GUI_SECRET)).thenReturn("");
-        Mockito.when(plugin.parseColor(title)).thenReturn(titleComponent);
+        Mockito.when(chatCommons.parseColor(title)).thenReturn(titleComponent);
         Mockito.when(titleComponent.compact()).thenReturn(titleComponent);
         Mockito.when(server.createInventory(player, itemAmount, titleComponent)).thenReturn(inventory);
 
@@ -127,12 +137,15 @@ class TestServices {
         for (int i = 0; i < itemAmount; i++) {
             itemStacks[i] = Mockito.mock(ItemStack.class);
         }
+        try (MockedStatic<EterniaLib> eterniaLibMockedStatic = Mockito.mockStatic(EterniaLib.class)) {
+            eterniaLibMockedStatic.when(EterniaLib::getChatCommons).thenReturn(chatCommons);
 
-        guiAPI.createGUI(title, itemStacks);
+            guiAPI.createGUI(title, itemStacks);
 
-        Assertions.assertNotNull(guiAPI.getGUI(title, player));
-        for (int i = 0; i < itemAmount; i++) {
-            Mockito.verify(inventory).setItem(i, itemStacks[i]);
+            Assertions.assertNotNull(guiAPI.getGUI(title, player));
+            for (int i = 0; i < itemAmount; i++) {
+                Mockito.verify(inventory).setItem(i, itemStacks[i]);
+            }
         }
     }
 

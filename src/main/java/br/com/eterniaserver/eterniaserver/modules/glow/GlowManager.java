@@ -21,22 +21,12 @@ public class GlowManager implements Module {
     @Override
     public void loadConfigurations() {
         Configurations.GlowConfiguration glowConfig = new Configurations.GlowConfiguration(servicesGlow);
-        Configurations.GlowMessageConfiguration glowMessages = new Configurations.GlowMessageConfiguration(plugin);
+        Configurations.GlowMessageConfiguration glowMessages = new Configurations.GlowMessageConfiguration(plugin.messages());
         Configurations.GlowCommandsConfiguration glowCommands = new Configurations.GlowCommandsConfiguration();
 
-        EterniaLib.registerConfiguration("eterniaserver", "glow", glowConfig);
-        EterniaLib.registerConfiguration("eterniaserver", "glow_messages", glowMessages);
-        EterniaLib.registerConfiguration("eterniaserver", "glow_commands", glowCommands);
-
-        glowConfig.executeConfig();
-        glowMessages.executeConfig();
-        glowCommands.executeCritical();
-
-        glowConfig.saveConfiguration(true);
-        glowMessages.saveConfiguration(true);
-        glowCommands.saveConfiguration(true);
-
-        loadCommandsLocale(glowCommands, Enums.Commands.class);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "glow", true, glowConfig);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "glow_messages", true, glowMessages);
+        EterniaLib.getCfgManager().registerConfiguration("eterniaserver", "glow_commands", true, glowCommands);
     }
 
     @Override
@@ -60,7 +50,7 @@ public class GlowManager implements Module {
 
     @Override
     public void loadCommands() {
-        EterniaLib.getCmdManager().registerCommand(new Commands.Glow(plugin, servicesGlow));
+        EterniaLib.getCmdManager().registerCommand(new Commands.Glow(servicesGlow));
     }
 
 }

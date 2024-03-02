@@ -1,8 +1,12 @@
 package br.com.eterniaserver.eterniaserver.modules.cash;
 
+import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
@@ -35,17 +39,16 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class CashMessages implements ReloadableConfiguration {
+    static class CashMessages implements MsgConfiguration<Messages> {
 
-        private final EterniaServer plugin;
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        protected CashMessages(EterniaServer plugin) {
-            this.plugin = plugin;
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
+        private final MessageMap<Messages, String> messageMap;
+
+        public CashMessages(MessageMap<Messages, String> messageMap) {
+            this.messageMap = messageMap;
         }
 
         @Override
@@ -69,13 +72,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -86,64 +84,64 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.CASH_BALANCE,
-                    "Você possui <color:#00aaaa>{0} C$<color:#555555>.",
+                    "Você possui #00aaaa{0} C$#555555.",
                     "quantia de cash"
             );
             addMessage(Messages.CASH_BALANCE_OTHER,
-                    "<color:#00aaaa>{2}<color:#aaaaaa> possui <color:#00aaaa>{0} C$<color:#555555>.",
+                    "#00aaaa{2}#aaaaaa possui #00aaaa{0} C$#555555.",
                     "quantia de cash",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.CASH_NOTHING_TO_BUY,
-                    "Você não está comprando nada<color:#555555>."
+                    "Você não está comprando nada#555555."
             );
             addMessage(Messages.CASH_BOUGHT,
-                    "<Compra confirmada com sucesso<color:#555555>."
+                    "Compra confirmada com sucesso#555555."
             );
             addMessage(Messages.CASH_CANCELED,
-                    "Compra cancelada com sucesso<color:#555555>."
+                    "Compra cancelada com sucesso#555555."
             );
             addMessage(Messages.CASH_RECEVEID,
-                    "Você recebeu <color:#00aaaa>{0} C$ <color:#aaaaaa>por <color:#00aaaa>{2}<color:#555555>.",
+                    "Você recebeu #00aaaa{0} C$ #aaaaaapor #00aaaa{2}#555555.",
                     "quantia de cash",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.CASH_SENT,
-                    "Você enviou <color:#00aaaa>{0} C$ <color:#aaaaaa>para <color:#00aaaa>{2}<color:#555555>.",
+                    "Você enviou #00aaaa{0} C$ #aaaaaapara #00aaaa{2}#555555.",
                     "quantia de cash",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.CASH_LOST,
-                    "Você perdeu <color:#00aaaa>{0} C$ <color:#aaaaaa>por <color:#00aaaa>{2}<color:#555555>.",
+                    "Você perdeu #00aaaa{0} C$ #aaaaaapor #00aaaa{2}#555555.",
                     "quantia de cash",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.CASH_REMOVED,
-                    "Você removeu <color:#00aaaa>{0} C$ <color:#aaaaaa>de <color:#00aaaa>{2}<color:#555555>.",
+                    "Você removeu #00aaaa{0} C$ #aaaaaade #00aaaa{2}#555555.",
                     "quantia de cash",
                     "nome do jogador",
                     "apelido do jogador"
             );
             addMessage(Messages.CASH_COST,
-                    "Isso irá custar <color:#00aaaa>{0} C$<color:#555555>.",
+                    "Isso irá custar #00aaaa{0} C$#555555.",
                     "quantia de cash"
             );
             addMessage(Messages.CASH_CHOOSE,
-                    "Use <color:#ffaa00>/cash accept <color:#aaaaaa>ou <color:#ffaa00>/cash deny<color:#aaaaaa> para aceitar ou negar a compra<color:#555555>."
+                    "Use #ffaa00/cash accept #aaaaaaou #ffaa00/cash deny#aaaaaa para aceitar ou negar a compra#555555."
             );
             addMessage(Messages.CASH_NO_HAS,
-                    "Você não possui <color:#00aaaa>{0} C$<color:#555555>.",
+                    "Você não possui #00aaaa{0} C$#555555.",
                     "quantia de cash"
             );
             addMessage(Messages.CASH_ALREADY_BUYING,
-                    "Você já possui uma compra em andamento<color:#555555>."
+                    "Você já possui uma compra em andamento#555555."
             );
             addMessage(Messages.CASH_NO_CASH,
-                    "Você não possui CASH suficiênte<color:#555555>."
+                    "Você não possui CASH suficiênte#555555."
             );
         }
 
@@ -152,18 +150,10 @@ final class Configurations {
 
     }
 
-    static class CashCommands implements ReloadableConfiguration {
+    static class CashCommands implements CmdConfiguration<Enums.Commands> {
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
-
-        private final CommandLocale[] commandsLocalesArray;
-
-        protected CashCommands() {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-        }
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
         @Override
         public FileConfiguration inFileConfiguration() {
@@ -183,16 +173,6 @@ final class Configurations {
         @Override
         public String getFilePath() {
             return Constants.CASH_COMMANDS_FILE_PATH;
-        }
-
-        @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
         }
 
         @Override
@@ -262,7 +242,6 @@ final class Configurations {
                     null
             ));
         }
-
     }
 
     static class CashConfiguration implements ReloadableConfiguration {
@@ -270,13 +249,11 @@ final class Configurations {
         private final FileConfiguration inFile;
         private final FileConfiguration outFile;
 
-        private final CommandLocale[] commandsLocalesArray;
         private final EterniaServer plugin;
 
         protected CashConfiguration(EterniaServer plugin) {
             this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
             this.outFile = new YamlConfiguration();
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
             this.plugin = plugin;
 
             NamespacedKey[] namespacedKeys = plugin.namespacedKeys();
@@ -318,16 +295,6 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
-        }
-
-        @Override
         public ConfigurationCategory category() {
             return ConfigurationCategory.GENERIC;
         }
@@ -336,8 +303,8 @@ final class Configurations {
         public void executeConfig() {
             final String[] strings = plugin.strings();
 
-            strings[Strings.CASH_MENU_TITLE.ordinal()] = inFile.getString("menu.name.value", "<color:#aaaaaa>Cash<color:%s>");
-            strings[Strings.CASH_TITLE.ordinal()] = inFile.getString("menu.glass.name", "<color:#aaaaaa>Loja de <color:#00aaaa>C.A.S.H.<color:#555555>!");
+            strings[Strings.CASH_MENU_TITLE.ordinal()] = inFile.getString("menu.name.value", "#aaaaaaCash%s");
+            strings[Strings.CASH_TITLE.ordinal()] = inFile.getString("menu.glass.name", "#aaaaaaLoja de #00aaaaC.A.S.H.#555555!");
             strings[Strings.CASH_TABLE_NAME.ordinal()] = inFile.getString("table-name.cash", "e_cash");
 
             PreGUI menu = loadMenuFromFile();
@@ -348,8 +315,8 @@ final class Configurations {
             outFile.set("menu.name.value", strings[Strings.CASH_MENU_TITLE.ordinal()]);
             outFile.set("menu.glass.name", strings[Strings.CASH_TITLE.ordinal()]);
             outFile.set("table-name.cash", strings[Strings.CASH_TABLE_NAME.ordinal()]);
-            outFile.set("menu.name.info-pt", "Não altere o final (<color:%s>)");
-            outFile.set("menu.name.info-en", "Don't change the end (<color:%s>)");
+            outFile.set("menu.name.info-pt", "Não altere o final (%s)");
+            outFile.set("menu.name.info-en", "Don't change the end (%s)");
             outFile.set("menu.size", menu.getItems().length);
 
             for (int i = 0; i < menu.getItems().length; i++) {
@@ -441,8 +408,8 @@ final class Configurations {
                     String guiName = inFile.getString("menu." + i + ".name", "");
                     List<String> itemLore = inFile.getStringList("menu." + i + ".lore");
 
-                    itemMeta.displayName(plugin.parseColor(guiName));
-                    itemMeta.lore(itemLore.stream().map(plugin::parseColor).collect(Collectors.toList()));
+                    itemMeta.displayName(EterniaLib.getChatCommons().parseColor(guiName));
+                    itemMeta.lore(itemLore.stream().map(EterniaLib.getChatCommons()::parseColor).collect(Collectors.toList()));
 
                     itemMeta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.CASH_ITEM_LORE), PersistentDataType.STRING, String.join(";", itemLore));
                     itemMeta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.CASH_GUI_NAME), PersistentDataType.STRING, guiName);
@@ -481,8 +448,8 @@ final class Configurations {
                         List<String> itemLore = inFile.getStringList("guis." + guiName + "." + i + ".lore");
                         String itemName = inFile.getString("guis." + guiName + "." + i + ".name", "");
 
-                        itemMeta.displayName(plugin.parseColor(itemName));
-                        itemMeta.lore(itemLore.stream().map(plugin::parseColor).collect(Collectors.toList()));
+                        itemMeta.displayName(EterniaLib.getChatCommons().parseColor(itemName));
+                        itemMeta.lore(itemLore.stream().map(EterniaLib.getChatCommons()::parseColor).collect(Collectors.toList()));
 
                         itemMeta.getPersistentDataContainer().set(
                                 plugin.getKey(ItemsKeys.CASH_GUI_NAME),
@@ -535,15 +502,15 @@ final class Configurations {
             ItemStack itemStack = new ItemStack(Material.OAK_SIGN);
             ItemMeta itemMeta = itemStack.getItemMeta();
             List<String> itemLore = List.of(
-                    "<color:#aaaaaa>Compre permissões",
-                    "<color:#aaaaaa>Para lhe ajudar",
-                    "<color:#aaaaaa>nessa jornada<color:#555555>."
+                    "#aaaaaaCompre permissões",
+                    "#aaaaaaPara lhe ajudar",
+                    "#aaaaaanessa jornada#555555."
             );
 
-            itemMeta.displayName(plugin.parseColor("<color:#aaaaaa>Permissões"));
-            itemMeta.lore(itemLore.stream().map(plugin::parseColor).collect(Collectors.toList()));
+            itemMeta.displayName(EterniaLib.getChatCommons().parseColor("#aaaaaaPermissões"));
+            itemMeta.lore(itemLore.stream().map(EterniaLib.getChatCommons()::parseColor).collect(Collectors.toList()));
             itemMeta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.CASH_ITEM_LORE), PersistentDataType.STRING, String.join(";", itemLore));
-            itemMeta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.CASH_GUI_NAME), PersistentDataType.STRING, "<color:#aaaaaa>Permissões");
+            itemMeta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.CASH_GUI_NAME), PersistentDataType.STRING, "#aaaaaaPermissões");
 
             itemStack.setItemMeta(itemMeta);
             itemStacks[10] = itemStack;
@@ -557,17 +524,17 @@ final class Configurations {
             ItemStack itemStack = new ItemStack(Material.EXPERIENCE_BOTTLE);
             ItemMeta itemMeta = itemStack.getItemMeta();
             List<String> itemLore = List.of(
-                    "<color:#aaaaaa>Upe mais rápido em",
-                    "<color:#aaaaaa>sua especialidade<color:#555555>!",
-                    "<color:#aaaaaa>Não acumulativo<color:#555555>.",
+                    "#aaaaaaUpe mais rápido em",
+                    "#aaaaaasua especialidade#555555!",
+                    "#aaaaaaNão acumulativo#555555.",
                     "",
-                    "<color:#aaaaaa>Duração<color:#555555>: <color:#00aaaa>30 dias",
-                    "<color:#aaaaaa>Preço<color:#555555>: <color:#00aaaa>70 C$"
+                    "#aaaaaaDuração#555555: #00aaaa30 dias",
+                    "#aaaaaaPreço#555555: #00aaaa70 C$"
             );
 
-            String guiName = "<color:#00aaaa>25% <color:#aaaaaa>Bônus de XP no McMMO<color:#555555>!";
-            itemMeta.displayName(plugin.parseColor(guiName));
-            itemMeta.lore(itemLore.stream().map(this.plugin::parseColor).collect(Collectors.toList()));
+            String guiName = "#00aaaa25% #aaaaaaBônus de XP no McMMO#555555!";
+            itemMeta.displayName(EterniaLib.getChatCommons().parseColor(guiName));
+            itemMeta.lore(itemLore.stream().map(EterniaLib.getChatCommons()::parseColor).collect(Collectors.toList()));
 
             itemMeta.getPersistentDataContainer().set(
                     plugin.getKey(ItemsKeys.CASH_GUI_NAME),
@@ -591,7 +558,7 @@ final class Configurations {
                             ";",
                             List.of(
                                     "lp user %player_name% permission settemp mcmmo.perks.xp.customboost.all true 30d",
-                                    "broadcast <color:#aaaaaa>O jogador <color:#00aaaa>%player_name% <color:#aaaaaa>comprou um boost de XP<color:#555555>."
+                                    "broadcast #aaaaaaO jogador #00aaaa%player_name% #aaaaaacomprou um boost de XP#555555."
                             )
                     )
             );
@@ -601,7 +568,7 @@ final class Configurations {
                     String.join(
                             ";",
                             List.of(
-                                    "<color:#aaaaaa>Parabéns pela sua compra<color:#555555>!"
+                                    "#aaaaaaParabéns pela sua compra#555555!"
                             )
                     )
             );
@@ -609,7 +576,7 @@ final class Configurations {
             itemStack.setItemMeta(itemMeta);
             itemStacks[10] = itemStack;
 
-            preGUIS[0] = new PreGUI("<color:#aaaaaa>Permissões", itemStacks, 0);
+            preGUIS[0] = new PreGUI("#aaaaaaPermissões", itemStacks, 0);
 
             return preGUIS;
         }
@@ -623,7 +590,7 @@ final class Configurations {
                     PersistentDataType.STRING,
                     "a"
             );
-            itemMeta.displayName(plugin.parseColor(plugin.getString(Strings.CASH_TITLE)));
+            itemMeta.displayName(EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.CASH_TITLE)));
             itemStack.setItemMeta(itemMeta);
 
             return itemStack;

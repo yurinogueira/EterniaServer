@@ -1,10 +1,15 @@
 package br.com.eterniaserver.eterniaserver.modules.spawner;
 
 import br.com.eterniaserver.acf.BaseCommand;
-import br.com.eterniaserver.acf.annotation.*;
+import br.com.eterniaserver.acf.annotation.CommandAlias;
+import br.com.eterniaserver.acf.annotation.CommandCompletion;
+import br.com.eterniaserver.acf.annotation.CommandPermission;
+import br.com.eterniaserver.acf.annotation.Default;
+import br.com.eterniaserver.acf.annotation.Description;
+import br.com.eterniaserver.acf.annotation.Syntax;
 import br.com.eterniaserver.acf.bukkit.contexts.OnlinePlayer;
 import br.com.eterniaserver.eternialib.EterniaLib;
-import br.com.eterniaserver.eternialib.database.DatabaseInterface;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.Entities;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
@@ -12,6 +17,7 @@ import br.com.eterniaserver.eterniaserver.enums.Strings;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
 import br.com.eterniaserver.eterniaserver.modules.core.Entities.PlayerProfile;
 import br.com.eterniaserver.eterniaserver.modules.core.Utils;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -33,14 +39,12 @@ final class Commands {
 
         private final EterniaServer plugin;
         private final Services.Spawner spawnerService;
-        private final DatabaseInterface databaseInterface;
 
         private static final List<String> entities = Stream.of(Entities.values()).map(Enum::name).collect(Collectors.toList());
 
         public Give(EterniaServer plugin, Services.Spawner spawnerService) {
             this.plugin = plugin;
             this.spawnerService = spawnerService;
-            this.databaseInterface = EterniaLib.getDatabase();
         }
 
         @Default
@@ -57,7 +61,7 @@ final class Commands {
             Player target = onlineTarget.getPlayer();
             Inventory inventory = target.getInventory();
             if (inventory.firstEmpty() == -1) {
-                plugin.sendMiniMessages(sender, Messages.SPAWNER_INV_FULL);
+                EterniaLib.getChatCommons().sendMessage(sender, Messages.SPAWNER_INV_FULL);
                 return;
             }
 
@@ -72,22 +76,22 @@ final class Commands {
             String senderName = senderNameDisplay[0];
             String senderDisplay = senderNameDisplay[1];
 
-            PlayerProfile targetProfile = databaseInterface.get(PlayerProfile.class, target.getUniqueId());
+            PlayerProfile targetProfile = EterniaLib.getDatabase().get(PlayerProfile.class, target.getUniqueId());
             String targetName = targetProfile.getPlayerName();
             String targetDisplay = targetProfile.getPlayerDisplay();
 
-            plugin.sendMiniMessages(target, Messages.SPAWNER_RECEIVED, spawnerName, senderName, senderDisplay, String.valueOf(value));
-            plugin.sendMiniMessages(sender, Messages.SPAWNER_SENT, spawnerName, targetName, targetDisplay, String.valueOf(value));
+            MessageOptions targetOptions = new MessageOptions(spawnerName, senderName, senderDisplay, String.valueOf(value));
+            EterniaLib.getChatCommons().sendMessage(target, Messages.SPAWNER_RECEIVED, targetOptions);
+
+            MessageOptions senderOptions = new MessageOptions(spawnerName, targetName, targetDisplay, String.valueOf(value));
+            EterniaLib.getChatCommons().sendMessage(sender, Messages.SPAWNER_SENT, senderOptions);
         }
 
         private void sendTypes(final CommandSender player) {
-            plugin.sendMiniMessages(
-                    player,
-                    Messages.SPAWNER_SEND_TYPES,
-                    String.join(
-                            plugin.getString(Strings.MINI_MESSAGES_ENTITIES_DIVIDER), entities
-                    )
+            MessageOptions messageOptions = new MessageOptions(String.join(
+                    plugin.getString(Strings.MINI_MESSAGES_ENTITIES_DIVIDER), entities)
             );
+            EterniaLib.getChatCommons().sendMessage(player, Messages.SPAWNER_SEND_TYPES, messageOptions);
         }
 
     }

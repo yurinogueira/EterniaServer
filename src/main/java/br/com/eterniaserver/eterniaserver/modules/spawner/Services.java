@@ -1,10 +1,13 @@
 package br.com.eterniaserver.eterniaserver.modules.spawner;
 
+import br.com.eterniaserver.eternialib.EterniaLib;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
 import br.com.eterniaserver.eterniaserver.enums.Strings;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
+
 import net.kyori.adventure.text.Component;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
@@ -29,7 +32,7 @@ final class Services {
             this.plugin = plugin;
 
             for (EntityType type : EntityType.values()) {
-                this.entityComponents[type.ordinal()] = plugin.parseColor(
+                this.entityComponents[type.ordinal()] = EterniaLib.getChatCommons().parseColor(
                         plugin.getString(Strings.MINI_MESSAGES_SPAWNERS_FORMAT).replace("%spawner_name%", type.name())
                 );
             }

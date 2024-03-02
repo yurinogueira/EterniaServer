@@ -1,7 +1,7 @@
 package br.com.eterniaserver.eterniaserver.modules.core;
 
 import br.com.eterniaserver.eternialib.EterniaLib;
-import br.com.eterniaserver.eternialib.database.DatabaseInterface;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.api.events.AfkStatusEvent;
 import br.com.eterniaserver.eterniaserver.enums.Booleans;
@@ -11,7 +11,9 @@ import br.com.eterniaserver.eterniaserver.enums.Strings;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
 import br.com.eterniaserver.eterniaserver.modules.core.Entities.PlayerProfile;
 import br.com.eterniaserver.eterniaserver.modules.core.Services.AfkService;
+
 import net.kyori.adventure.text.Component;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -28,19 +30,17 @@ final class Schedules {
     static class MainTick extends BukkitRunnable {
 
         private final EterniaServer plugin;
-        private final DatabaseInterface database;
         private final AfkService afkServices;
 
-        public MainTick(final EterniaServer plugin, final AfkService afkServices) {
+        public MainTick(EterniaServer plugin, AfkService afkServices) {
             this.plugin = plugin;
             this.afkServices = afkServices;
-            this.database = EterniaLib.getDatabase();
         }
 
         @Override
         public void run() {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                PlayerProfile playerProfile = database.get(PlayerProfile.class, player.getUniqueId());
+                PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, player.getUniqueId());
 
                 checkAFK(player, playerProfile);
                 checkPvP(player, playerProfile);
@@ -60,12 +60,8 @@ final class Schedules {
                     return;
                 }
 
-                Component afkAutoEnterMessage = plugin.getMiniMessage(
-                        Messages.AFK_AUTO_ENTER,
-                        true,
-                        playerProfile.getPlayerName(),
-                        playerProfile.getPlayerDisplay()
-                );
+                MessageOptions messageOptions = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+                Component afkAutoEnterMessage = EterniaLib.getChatCommons().parseMessage(Messages.AFK_AUTO_ENTER, messageOptions);
                 plugin.getServer().broadcast(afkAutoEnterMessage);
                 playerProfile.setAfk(true);
                 return;
@@ -78,14 +74,10 @@ final class Schedules {
                 return;
             }
 
-            Component afkKickMessage = plugin.getMiniMessage(
-                    Messages.AFK_BROADCAST_KICK,
-                    true,
-                    playerProfile.getPlayerName(),
-                    playerProfile.getPlayerDisplay()
-            );
+            MessageOptions messageOptions = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+            Component afkKickMessage = EterniaLib.getChatCommons().parseMessage(Messages.AFK_BROADCAST_KICK, messageOptions);
             plugin.getServer().broadcast(afkKickMessage);
-            player.kick(plugin.getMiniMessage(Messages.AFK_KICKED, false));
+            player.kick(EterniaLib.getChatCommons().parseMessage(Messages.AFK_KICKED));
         }
 
         private void checkPvP(Player player, PlayerProfile playerProfile) {
@@ -99,7 +91,7 @@ final class Schedules {
 
             if (seconds > plugin.getInteger(Integers.PVP_TIME)) {
                 playerProfile.setOnPvP(false);
-                plugin.sendMiniMessages(player, Messages.LEFT_PVP);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.LEFT_PVP);
             }
         }
     }

@@ -1,5 +1,7 @@
 package br.com.eterniaserver.eterniaserver.modules.core;
 
+import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.api.events.AfkStatusEvent;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
@@ -30,7 +32,7 @@ final class Services {
 
         private final EterniaServer plugin;
 
-        protected AfkService(final EterniaServer plugin) {
+        protected AfkService(EterniaServer plugin) {
             this.plugin = plugin;
         }
 
@@ -58,11 +60,8 @@ final class Services {
             
             playerProfile.setAfk(false);
             playerProfile.setLastMove(System.currentTimeMillis());
-            Component globalMessage = plugin.getMiniMessage(
-                    Messages.AFK_LEAVE,
-                    true,
-                    playerProfile.getPlayerName(), playerProfile.getPlayerDisplay()
-            );
+            MessageOptions options = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+            Component globalMessage = EterniaLib.getChatCommons().parseMessage(Messages.AFK_LEAVE, options);
             plugin.getServer().broadcast(globalMessage);
         }
     }
@@ -73,13 +72,13 @@ final class Services {
 
         private final Map<String, Utils.GUIData> guisMap = new HashMap<>();
 
-        protected GUI(final EterniaServer plugin) {
+        protected GUI(EterniaServer plugin) {
             this.plugin = plugin;
         }
 
         @Override
         public void createGUI(String guiName, ItemStack[] items) {
-            Component title = plugin.parseColor(String.format(guiName, plugin.getString(Strings.GUI_SECRET))).compact();
+            Component title = EterniaLib.getChatCommons().parseColor(String.format(guiName, plugin.getString(Strings.GUI_SECRET))).compact();
             guisMap.put(guiName, new Utils.GUIData(title, items));
         }
 

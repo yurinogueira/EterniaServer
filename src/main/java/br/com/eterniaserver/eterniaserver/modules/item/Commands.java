@@ -4,11 +4,15 @@ import br.com.eterniaserver.acf.BaseCommand;
 import br.com.eterniaserver.acf.CommandHelp;
 import br.com.eterniaserver.acf.annotation.*;
 import br.com.eterniaserver.acf.bukkit.contexts.OnlinePlayer;
+import br.com.eterniaserver.eternialib.EterniaLib;
+import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
+
 import net.kyori.adventure.text.Component;
+
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,6 +22,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 final class Commands {
 
@@ -70,10 +75,10 @@ final class Commands {
                     player.getWorld().dropItem(player.getLocation(), itemStack);
                 }
 
-                plugin.sendMiniMessages(sender, Messages.ITEM_CUSTOM_GIVE);
-                plugin.sendMiniMessages(player, Messages.ITEM_CUSTOM_RECEIVED);
+                EterniaLib.getChatCommons().sendMessage(sender, Messages.ITEM_CUSTOM_GIVE);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_CUSTOM_RECEIVED);
             } catch (Exception ignored) {
-                plugin.sendMiniMessages(sender, Messages.ITEM_CUSTOM_CANT_GIVE);
+                EterniaLib.getChatCommons().sendMessage(sender, Messages.ITEM_CUSTOM_CANT_GIVE);
             }
         }
 
@@ -88,7 +93,8 @@ final class Commands {
             itemMeta.setCustomModelData(integer);
             itemStack.setItemMeta(itemMeta);
             player.getInventory().setItemInMainHand(itemStack);
-            plugin.sendMiniMessages(player, Messages.ITEM_SET_CUSTOM, String.valueOf(integer));
+            MessageOptions messageOptions = new MessageOptions(String.valueOf(integer));
+            EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_SET_CUSTOM, messageOptions);
         }
 
         @Subcommand("%ITEM_CLEAR")
@@ -109,13 +115,13 @@ final class Commands {
             public void onItemClearLore(Player player) {
                 ItemStack item = player.getInventory().getItemInMainHand();
                 if (item.getType() == Material.AIR || item.lore() == null) {
-                    plugin.sendMiniMessages(player, Messages.ITEM_NOT_FOUND);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_NOT_FOUND);
                     return;
                 }
 
                 item.lore(new ArrayList<>());
                 player.getInventory().setItemInMainHand(item);
-                plugin.sendMiniMessages(player, Messages.ITEM_CLEAR_LORE);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_CLEAR_LORE);
             }
 
             @Subcommand("%ITEM_CLEAR_NAME")
@@ -124,13 +130,14 @@ final class Commands {
             public void onItemClearName(Player player) {
                 ItemStack item = player.getInventory().getItemInMainHand();
                 if (item.getType() == Material.AIR) {
-                    plugin.sendMiniMessages(player, Messages.ITEM_NOT_FOUND);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_NOT_FOUND);
                     return;
                 }
 
                 item.getItemMeta().displayName(item.getItemMeta().displayName());
                 player.getInventory().setItemInMainHand(item);
-                plugin.sendMiniMessages(player, Messages.ITEM_CLEAR_NAME);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_CLEAR_NAME);
+                plugin.getLogger().log(Level.INFO, "Item name cleared by {0}", player.getName());
             }
 
         }
@@ -142,11 +149,11 @@ final class Commands {
         public void onItemAddLore(Player player, String loreStr) {
             ItemStack item = player.getInventory().getItemInMainHand();
             if (item.getType() == Material.AIR) {
-                plugin.sendMiniMessages(player, Messages.ITEM_NOT_FOUND);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_NOT_FOUND);
                 return;
             }
 
-            Component loreComponent = plugin.parseColor(loreStr);
+            Component loreComponent = EterniaLib.getChatCommons().parseColor(loreStr);
             List<Component> lore = item.lore();
             if (lore != null) {
                 lore.add(loreComponent);
@@ -157,7 +164,8 @@ final class Commands {
 
 
             player.getInventory().setItemInMainHand(item);
-            plugin.sendMiniMessages(player, Messages.ITEM_ADD_LORE, loreStr);
+            MessageOptions messageOptions = new MessageOptions(loreStr);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_ADD_LORE, messageOptions);
         }
 
         @Subcommand("%ITEM_SET")
@@ -179,14 +187,16 @@ final class Commands {
             public void onItemSetLore(Player player, String loreStr) {
                 ItemStack item = player.getInventory().getItemInMainHand();
                 if (item.getType() == Material.AIR) {
-                    plugin.sendMiniMessages(player, Messages.ITEM_NOT_FOUND);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_NOT_FOUND);
                     return;
                 }
 
-                Component loreComponent = plugin.parseColor(loreStr);
+                Component loreComponent = EterniaLib.getChatCommons().parseColor(loreStr);
                 item.lore(List.of(loreComponent));
                 player.getInventory().setItemInMainHand(item);
-                plugin.sendMiniMessages(player, Messages.ITEM_SET_LORE, loreStr);
+                MessageOptions messageOptions = new MessageOptions(loreStr);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_SET_LORE, messageOptions);
+                plugin.getLogger().log(Level.INFO, "Item lore set by {0}", player.getName());
             }
 
             @Subcommand("%ITEM_SET_NAME")
@@ -196,16 +206,17 @@ final class Commands {
             public void onItemSetName(Player player, String nameStr) {
                 ItemStack item = player.getInventory().getItemInMainHand();
                 if (item.getType() == Material.AIR) {
-                    plugin.sendMiniMessages(player, Messages.ITEM_NOT_FOUND);
+                    EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_NOT_FOUND);
                     return;
                 }
 
-                Component nameComponent = plugin.parseColor(nameStr);
+                Component nameComponent = EterniaLib.getChatCommons().parseColor(nameStr);
                 ItemMeta meta = item.getItemMeta();
                 meta.displayName(nameComponent);
                 item.setItemMeta(meta);
                 player.getInventory().setItemInMainHand(item);
-                plugin.sendMiniMessages(player, Messages.ITEM_SET_NAME, nameStr);
+                MessageOptions options = new MessageOptions(nameStr);
+                EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_SET_NAME, options);
             }
 
         }

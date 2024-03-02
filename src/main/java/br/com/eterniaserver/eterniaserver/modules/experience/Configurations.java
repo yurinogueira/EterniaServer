@@ -1,8 +1,11 @@
 package br.com.eterniaserver.eterniaserver.modules.experience;
 
+import br.com.eterniaserver.eternialib.chat.MessageMap;
 import br.com.eterniaserver.eternialib.configuration.CommandLocale;
-import br.com.eterniaserver.eternialib.configuration.ReloadableConfiguration;
 import br.com.eterniaserver.eternialib.configuration.enums.ConfigurationCategory;
+import br.com.eterniaserver.eternialib.configuration.interfaces.CmdConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.MsgConfiguration;
+import br.com.eterniaserver.eternialib.configuration.interfaces.ReloadableConfiguration;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.Lists;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
@@ -21,18 +24,15 @@ final class Configurations {
         throw new IllegalStateException(Constants.UTILITY_CLASS);
     }
 
-    static class ExpMessagesConfiguration implements ReloadableConfiguration {
+    static class ExpMessagesConfiguration implements MsgConfiguration<Messages> {
 
-        private final EterniaServer plugin;
+        private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+        private final FileConfiguration outFile = new YamlConfiguration();
 
-        private final FileConfiguration inFile;
-        private final FileConfiguration outFile;
+        private final MessageMap<Messages, String> messageMap;
 
-        public ExpMessagesConfiguration(EterniaServer plugin) {
-            this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-            this.outFile = new YamlConfiguration();
-
-            this.plugin = plugin;
+        public ExpMessagesConfiguration(MessageMap<Messages, String> messageMap) {
+            this.messageMap = messageMap;
         }
 
         @Override
@@ -56,13 +56,8 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return plugin.messages();
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return new CommandLocale[0];
+        public MessageMap<Messages, String> messages() {
+            return messageMap;
         }
 
         @Override
@@ -73,66 +68,66 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.EXP_INVALID_CHOICE,
-                    "Argumento inválido<color:#555555>, <color:#aaaaaa>o tipo deve ser <color:#00aaaa>xp <color:#aaaaaa>ou <color:#00aaaa>level<color:#555555>."
+                    "Argumento inválido#555555, #aaaaaao tipo deve ser #00aaaaxp #aaaaaaou #00aaaalevel#555555."
             );
             addMessage(Messages.EXP_SET_FROM,
-                    "Você definiu para <color:#00aaaa>{0}<color:#aaaaaa> a quantia de <color:#00aaaa>{3}<color:#aaaaaa> de <color:#00aaaa>{2}<color:#555555>.",
+                    "Você definiu para #00aaaa{0}#aaaaaa a quantia de #00aaaa{3}#aaaaaa de #00aaaa{2}#555555.",
                     "quantia de exp",
                     "nome do jogador",
                     "apelido do jogador",
                     "exp ou nível"
             );
             addMessage(Messages.EXP_SETED,
-                    "A sua quantia de <color:#00aaaa>{3}<color:#aaaaaa> foi definida para <color:#00aaaa>{0}<color:#aaaaaa> por <color:#00aaaa>{2}<color:#555555>.",
+                    "A sua quantia de #00aaaa{3}#aaaaaa foi definida para #00aaaa{0}#aaaaaa por #00aaaa{2}#555555.",
                     "quantia de exp",
                     "nome de quem alterou",
                     "apelido de quem alterou",
                     "exp ou nível"
             );
             addMessage(Messages.EXP_REMOVE_FROM,
-                    "Você removeu <color:#00aaaa>{0} {3}<color:#aaaaaa> de <color:#00aaaa>{2}<color:#555555>.",
+                    "Você removeu #00aaaa{0} {3}#aaaaaa de #00aaaa{2}#555555.",
                     "quantia de exp",
                     "nome do jogador",
                     "apelido do jogador",
                     "exp ou nível"
             );
             addMessage(Messages.EXP_REMOVED,
-                    "Foi retirado <color:#00aaaa>{0}<color:#aaaaaa> de sua quantia de <color:#00aaaa>{3}<color:#aaaaaa> por <color:#00aaaa>{2}<color:#555555>.",
+                    "Foi retirado #00aaaa{0}#aaaaaa de sua quantia de #00aaaa{3}#aaaaaa por #00aaaa{2}#555555.",
                     "quantia de exp",
                     "nome de quem removeu",
                     "apelido de quem alterou",
                     "exp ou nível"
             );
             addMessage(Messages.EXP_GIVE_FROM,
-                    "Você deu <color:#00aaaa>{0}<color:#aaaaaa> de <color:#00aaaa>{3}<color:#aaaaaa> para <color:#00aaaa>{2}<color:#555555>.",
+                    "Você deu #00aaaa{0}#aaaaaa de #00aaaa{3}#aaaaaa para #00aaaa{2}#555555.",
                     "quantia de exp",
                     "nome do jogador",
                     "apelido do jogador",
                     "exp ou nível"
             );
             addMessage(Messages.EXP_GIVED,
-                    "Foi recebeu <color:#00aaaa>{0} {3}<color:#aaaaaa> por <color:#00aaaa>{2}<color:#555555>.",
+                    "Foi recebeu #00aaaa{0} {3}#aaaaaa por #00aaaa{2}#555555.",
                     "quantia de exp",
                     "nome de quem removeu",
                     "apelido de quem alterou",
                     "exp ou nível"
             );
             addMessage(Messages.EXP_BALANCE,
-                    "Você possui <color:#00aaaa>{0}<color:#aaaaaa> níveis de experiência guardados<color:#555555>.",
+                    "Você possui #00aaaa{0}#aaaaaa níveis de experiência guardados#555555.",
                     "quantia de exp"
             );
             addMessage(Messages.EXP_BOTTLED,
-                    "Tome sua garrafinha<color:#555555>!"
+                    "Tome sua garrafinha#555555!"
             );
             addMessage(Messages.EXP_INSUFFICIENT,
-                    "Você não possui tudo isso de experiência<color:#555555>."
+                    "Você não possui tudo isso de experiência#555555."
             );
             addMessage(Messages.EXP_WITHDRAW,
-                    "Você sacou <color:#00aaaa>{0}<color:#aaaaaa> níveis de experiência<color:#555555>.",
+                    "Você sacou #00aaaa{0}#aaaaaa níveis de experiência#555555.",
                     "quantia de níveis"
             );
             addMessage(Messages.EXP_DEPOSIT,
-                    "Você depositou <color:#00aaaa>{0}<color:#aaaaaa> níveis de experiência<color:#555555>.",
+                    "Você depositou #00aaaa{0}#aaaaaa níveis de experiência#555555.",
                     "quantia de níveis"
             );
         }
@@ -141,19 +136,10 @@ final class Configurations {
         public void executeCritical() {}
     }
 
-    static class ExpCommandsConfiguration implements ReloadableConfiguration {
+    static class ExpCommandsConfiguration implements CmdConfiguration<Enums.Commands> {
 
-            private final FileConfiguration inFile;
-            private final FileConfiguration outFile;
-
-            private final CommandLocale[] commandsLocalesArray;
-
-            public ExpCommandsConfiguration() {
-                this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
-                this.outFile = new YamlConfiguration();
-
-                this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
-            }
+            private final FileConfiguration inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
+            private final FileConfiguration outFile = new YamlConfiguration();
 
             @Override
             public FileConfiguration inFileConfiguration() {
@@ -173,16 +159,6 @@ final class Configurations {
             @Override
             public String getFilePath() {
                 return Constants.EXPERIENCE_COMMANDS_FILE_PATH;
-            }
-
-            @Override
-            public String[] messages() {
-                return new String[0];
-            }
-
-            @Override
-            public CommandLocale[] commandsLocale() {
-                return commandsLocalesArray;
             }
 
             @Override
@@ -259,7 +235,6 @@ final class Configurations {
         private final FileConfiguration inFile;
         private final FileConfiguration outFile;
 
-        private final CommandLocale[] commandsLocalesArray;
 
         private final String[] strings;
         private final List<List<String>> stringLists;
@@ -268,7 +243,6 @@ final class Configurations {
             this.inFile = YamlConfiguration.loadConfiguration(new File(getFilePath()));
             this.outFile = new YamlConfiguration();
 
-            this.commandsLocalesArray = new CommandLocale[Enums.Commands.values().length];
             this.strings = plugin.strings();
             this.stringLists = plugin.stringLists();
         }
@@ -294,16 +268,6 @@ final class Configurations {
         }
 
         @Override
-        public String[] messages() {
-            return new String[0];
-        }
-
-        @Override
-        public CommandLocale[] commandsLocale() {
-            return commandsLocalesArray;
-        }
-
-        @Override
         public ConfigurationCategory category() {
             return ConfigurationCategory.GENERIC;
         }
@@ -311,13 +275,13 @@ final class Configurations {
         @Override
         public void executeConfig() {
             // Strings
-            strings[Strings.MINI_MESSAGES_BOTTLE_EXP_NAME.ordinal()] = inFile.getString("mini-messages.bottle-name", "<color:#aaaaaa>Garrafa com <color:#00aaaa>Experiência");
+            strings[Strings.MINI_MESSAGES_BOTTLE_EXP_NAME.ordinal()] = inFile.getString("mini-messages.bottle-name", "#aaaaaaGarrafa com #00aaaaExperiência");
             strings[Strings.EXP_XP_LABEL.ordinal()] = inFile.getString("label.xp", "xp");
             strings[Strings.EXP_LEVEL_LABEL.ordinal()] = inFile.getString("label.level", "níveis");
             strings[Strings.EXP_TABLE_NAME.ordinal()] = inFile.getString("table-name.xp", "e_xp");
             // Lists
             List<String> list = inFile.getStringList("mini-messages.bottle-lore");
-            stringLists.set(Lists.MINI_MESSAGES_BOTTLE_EXP_LORE.ordinal(), list.isEmpty() ? List.of("<color:#aaaaaa>Quantia<color:#555555>: <color:#00aaaa>%amount%") : list);
+            stringLists.set(Lists.MINI_MESSAGES_BOTTLE_EXP_LORE.ordinal(), list.isEmpty() ? List.of("#aaaaaaQuantia#555555: #00aaaa%amount%") : list);
 
             // Strings
             outFile.set("mini-messages.bottle-name", strings[Strings.MINI_MESSAGES_BOTTLE_EXP_NAME.ordinal()]);

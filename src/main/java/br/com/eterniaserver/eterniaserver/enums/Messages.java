@@ -2,6 +2,7 @@ package br.com.eterniaserver.eterniaserver.enums;
 
 public enum Messages {
 
+    SERVER_PREFIX,
     SERVER_NO_PERM,
     SERVER_NO_PLAYER,
     CASH_BALANCE,
