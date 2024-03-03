@@ -72,7 +72,7 @@ final class Commands {
                 str.setLength(str.length() - 2);
             }
 
-            MessageOptions options = new MessageOptions(str.toString());
+            MessageOptions options = new MessageOptions(EterniaLib.getChatCommons().getColor(str.toString()));
             EterniaLib.getChatCommons().sendMessage(player, Messages.WARP_LIST, options);
         }
 
