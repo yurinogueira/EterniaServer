@@ -577,6 +577,7 @@ final class Configurations {
             strings[Strings.PERM_FLY_BYPASS.ordinal()] = inFile.getString("permissions.fly.bypass", "eternia.fly.bypass");
             strings[Strings.JOIN_NAMES.ordinal()] = inFile.getString("messages.join-names-display", "#00aaaa{0}#AAAAAA, ");
             strings[Strings.PERM_BASE_COMMAND.ordinal()] = inFile.getString("permissions.base-command", "eternia.");
+            strings[Strings.PERM_GOD_MODE.ordinal()] = inFile.getString("permissions.god-mode", "eternia.god");
 
             // Lists
             List<String> blackedCommands = inFile.getStringList("critical-configs.blocked-commands");
@@ -698,6 +699,7 @@ final class Configurations {
             outFile.set("permissions.fly.bypass", strings[Strings.PERM_FLY_BYPASS.ordinal()]);
             outFile.set("messages.join-names-display", strings[Strings.JOIN_NAMES.ordinal()]);
             outFile.set("permissions.base-command", strings[Strings.PERM_BASE_COMMAND.ordinal()]);
+            outFile.set("permissions.god-mode", strings[Strings.PERM_GOD_MODE.ordinal()]);
             // Lists
             outFile.set("critical-configs.blocked-commands", stringLists.get(Lists.BLACKLISTED_COMMANDS.ordinal()));
             outFile.set("mini-messages.profile.custom-messages", stringLists.get(Lists.PROFILE_CUSTOM_MESSAGES.ordinal()));

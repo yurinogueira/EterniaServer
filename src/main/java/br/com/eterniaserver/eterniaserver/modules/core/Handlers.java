@@ -44,14 +44,20 @@ final class Handlers implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player player) {
+        if (event.getEntity() instanceof Player player && player.hasPermission(plugin.getString(Strings.PERM_GOD_MODE))) {
             PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, player.getUniqueId());
-            event.setCancelled(playerProfile.isGod());
+            if (playerProfile.isGod()) {
+                event.setCancelled(true);
+            }
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
         if (event.getDamager() instanceof Player damager && event.getEntity() instanceof Player) {
             PlayerProfile damagerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, damager.getUniqueId());
             damagerProfile.setPvpLastJoin(System.currentTimeMillis());
