@@ -8,6 +8,8 @@ import br.com.eterniaserver.eterniaserver.enums.Strings;
 
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 public class TeleportManager implements Module {
@@ -47,6 +49,7 @@ public class TeleportManager implements Module {
         }
 
         warpService.updateSpawnLocation();
+        warpService.loadWarpNames();
         homeService.setHomes(EterniaLib.getDatabase().listAll(Entities.HomeLocation.class));
     }
 
@@ -56,10 +59,16 @@ public class TeleportManager implements Module {
             Player player = homes.getPlayer();
             return homeService.getHomeNames(player.getUniqueId());
         });
-        EterniaLib.getCmdManager().getCommandCompletions().registerCompletion(
-                "warps",
-                warps -> warpService.getWarpNames()
-        );
+        EterniaLib.getCmdManager().getCommandCompletions().registerCompletion("warps", warps -> {
+            Player player = warps.getPlayer();
+            List<String> warpsAvailable = new ArrayList<>();
+            for (String warp : warpService.getWarpNames()) {
+                if (player.hasPermission(plugin.getString(Strings.PERM_TELEPORT_PREFIX) + warp)) {
+                    warpsAvailable.add(warp);
+                }
+            }
+            return warpsAvailable;
+        });
     }
 
     @Override

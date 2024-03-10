@@ -156,24 +156,33 @@ final class Commands {
         @CommandPermission("%THOR_PERM")
         @Syntax("%THOR_SYNTAX")
         @Description("%THOR_DESCRIPTION")
-        public void onThor(Player player, @Optional OnlinePlayer onlineTarget) {
-            PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, player.getUniqueId());
-
-            if (onlineTarget != null) {
+        public void onThor(CommandSender sender, @Optional OnlinePlayer onlineTarget, @Optional Boolean view) {
+            if (onlineTarget != null && !Boolean.TRUE.equals(view)) {
                 Player target = onlineTarget.getPlayer();
                 PlayerProfile targetProfile = EterniaLib.getDatabase().get(PlayerProfile.class, target.getUniqueId());
 
                 target.getWorld().strikeLightning(target.getLocation());
 
                 MessageOptions playerOptions = new MessageOptions(targetProfile.getPlayerName(), targetProfile.getPlayerDisplay());
-                EterniaLib.getChatCommons().sendMessage(player, Messages.THOR_SETED_TO, playerOptions);
+                EterniaLib.getChatCommons().sendMessage(sender, Messages.THOR_SETED_TO, playerOptions);
 
-                MessageOptions targetOptions = new MessageOptions(playerProfile.getPlayerName(), playerProfile.getPlayerDisplay());
+                String[] nameAndDisplay = Utils.getNameAndDisplay(sender);
+                MessageOptions targetOptions = new MessageOptions(nameAndDisplay[0], nameAndDisplay[1]);
                 EterniaLib.getChatCommons().sendMessage(target, Messages.THOR_SETED_BY, targetOptions);
                 return;
             }
 
-            player.getWorld().strikeLightning(player.getTargetBlock(null, 100).getLocation());
+            if (onlineTarget != null) {
+                Player player = onlineTarget.getPlayer();
+                player.getWorld().strikeLightning(player.getTargetBlock(null, 100).getLocation());
+                return;
+            }
+
+            if (sender instanceof Player player) {
+                player.getWorld().strikeLightning(player.getTargetBlock(null, 100).getLocation());
+            }
+
+            EterniaLib.getChatCommons().sendMessage(sender, Messages.SERVER_NO_PLAYER);
         }
 
         @CommandAlias("%BROADCAST")

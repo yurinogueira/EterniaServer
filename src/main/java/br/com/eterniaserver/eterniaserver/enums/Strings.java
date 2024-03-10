@@ -70,4 +70,5 @@ public enum Strings {
     CHAT_TABLE_NAME,
     CHAT_DEFAULT_TAG_COLOR,
     PERM_BASE_COMMAND,
+    PERM_TELEPORT_PREFIX,
 }

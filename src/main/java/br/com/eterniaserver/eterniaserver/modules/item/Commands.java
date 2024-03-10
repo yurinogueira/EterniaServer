@@ -7,9 +7,10 @@ import br.com.eterniaserver.acf.bukkit.contexts.OnlinePlayer;
 import br.com.eterniaserver.eternialib.EterniaLib;
 import br.com.eterniaserver.eternialib.chat.MessageOptions;
 import br.com.eterniaserver.eterniaserver.EterniaServer;
-import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
 import br.com.eterniaserver.eterniaserver.enums.Messages;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
+
+import com.google.gson.Gson;
 
 import net.kyori.adventure.text.Component;
 
@@ -18,7 +19,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +32,8 @@ final class Commands {
 
     @CommandAlias("%ITEM")
     static class Item extends BaseCommand {
+
+        private final Gson gson = new Gson();
 
         private final EterniaServer plugin;
 
@@ -52,34 +54,23 @@ final class Commands {
         @CommandPermission("%ITEM_SEND_CUSTOM_PERM")
         @Description("%ITEM_SEND_CUSTOM_DESCRIPTION")
         @Syntax("%ITEM_SEND_CUSTOM_SYNTAX")
-        @CommandCompletion("@players 3 1 STONE sendmessage %player_name% &8[&aE&9S&8] &7Item preula;give %player_name% minecraft:stone")
+        @CommandCompletion("@players string")
         public void sendItemCustom(CommandSender sender,
                                    OnlinePlayer target,
-                                   @Conditions("limits:min=0,max=2147483647") Integer usages,
-                                   @Conditions("limits:min=0,max=1") Integer console,
-                                   String item,
-                                   String line) {
-            try {
-                ItemStack itemStack = new ItemStack(Material.valueOf(item));
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.TAG_FUNCTION), PersistentDataType.INTEGER, 2);
-                itemMeta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.TAG_RUN_IN_CONSOLE), PersistentDataType.INTEGER, console);
-                itemMeta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.TAG_USAGES), PersistentDataType.INTEGER, usages);
-                itemMeta.getPersistentDataContainer().set(plugin.getKey(ItemsKeys.TAG_RUN_COMMAND), PersistentDataType.STRING, line);
-                itemStack.setItemMeta(itemMeta);
+                                   String jsonItem) {
+            Utils.JsonItem item = gson.fromJson(jsonItem, Utils.JsonItem.class);
 
-                Player player = target.getPlayer();
-                if (player.getInventory().firstEmpty() != -1) {
-                    player.getInventory().addItem(itemStack);
-                } else {
-                    player.getWorld().dropItem(player.getLocation(), itemStack);
-                }
+            ItemStack itemStack = item.getItemStack(plugin);
 
-                EterniaLib.getChatCommons().sendMessage(sender, Messages.ITEM_CUSTOM_GIVE);
-                EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_CUSTOM_RECEIVED);
-            } catch (Exception ignored) {
-                EterniaLib.getChatCommons().sendMessage(sender, Messages.ITEM_CUSTOM_CANT_GIVE);
+            Player player = target.getPlayer();
+            if (player.getInventory().firstEmpty() != -1) {
+                player.getInventory().addItem(itemStack);
+            } else {
+                player.getWorld().dropItem(player.getLocation(), itemStack);
             }
+
+            EterniaLib.getChatCommons().sendMessage(sender, Messages.ITEM_CUSTOM_GIVE);
+            EterniaLib.getChatCommons().sendMessage(player, Messages.ITEM_CUSTOM_RECEIVED);
         }
 
         @Subcommand("%ITEM_CUSTOM_MODEL")

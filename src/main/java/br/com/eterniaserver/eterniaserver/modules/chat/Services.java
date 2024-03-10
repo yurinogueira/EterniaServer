@@ -63,7 +63,7 @@ final class Services {
 
         protected static final String TELL_CHANNEL_STRING = "tellchannel";
 
-        private final static String NICKNAME_WORD_REGEX = "\\W";
+        private final static String NICKNAME_WORD_REGEX = "[^a-zA-Z0-9#<>]";
         private final static String CLEAR_COLOR_REGEX = "<#[a-fA-F\\d]{6}>";
 
         private final Map<UUID, UUID> tellMap = new ConcurrentHashMap<>();
@@ -218,6 +218,7 @@ final class Services {
             msg = msg.replaceAll(CLEAR_COLOR_REGEX, "");
 
             MessageOptions options = new MessageOptions(
+                    false,
                     msg,
                     playerProfile.getPlayerName(),
                     playerProfile.getPlayerDisplay(),
@@ -283,10 +284,10 @@ final class Services {
 
             for (Player receiver : plugin.getServer().getOnlinePlayers()) {
                 boolean hasPermission = receiver.hasPermission(channelObject.perm());
-                if (!channelObject.hasRange() && !hasPermission) {
+                if (!hasPermission) {
                     viewers.remove(receiver);
                 }
-                else if (hasPermission) {
+                else if (channelObject.hasRange()) {
                     int range = channelObject.range();
                     boolean isInRange = range <= 0 || (
                             world.equals(receiver.getWorld())
@@ -319,7 +320,7 @@ final class Services {
                 return sourceMessage;
             });
 
-            if (viewers.isEmpty()) {
+            if (viewers.size() == 1) {
                 EterniaLib.getChatCommons().sendMessage(player, Messages.CHAT_NO_ONE_NEAR);
             }
         }
@@ -331,9 +332,20 @@ final class Services {
             if (mentionPlayerUUID != null && player.hasPermission(plugin.getString(Strings.PERM_CHAT_MENTION))) {
                 Player mentionPlayer = plugin.getServer().getPlayer(mentionPlayerUUID);
                 if (mentionPlayer != null) {
+                    String mentionTitle = EterniaLib
+                            .getChatCommons()
+                            .getColor(plugin.getString(Strings.CONS_MENTION_TITLE))
+                            .replace("{0}", playerProfile.getPlayerName())
+                            .replace("{1}", playerProfile.getPlayerDisplay());
+                    String mentionSubTitle = EterniaLib
+                            .getChatCommons()
+                            .getColor(plugin.getString(Strings.CONS_MENTION_SUBTITLE))
+                            .replace("{0}", playerProfile.getPlayerName())
+                            .replace("{1}", playerProfile.getPlayerDisplay());
+
                     Title title = Title.title(
-                            EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.CONS_MENTION_TITLE).replace("{0}", playerProfile.getPlayerName()).replace("{1}", playerProfile.getPlayerDisplay())),
-                            EterniaLib.getChatCommons().parseColor(plugin.getString(Strings.CONS_MENTION_SUBTITLE).replace("{0}", playerProfile.getPlayerName()).replace("{1}", playerProfile.getPlayerDisplay())),
+                            EterniaLib.getChatCommons().parseColor(mentionTitle),
+                            EterniaLib.getChatCommons().parseColor(mentionSubTitle),
                             mentionTimes
                     );
                     mentionPlayer.playNote(mentionPlayer.getLocation(), Instrument.PIANO, Note.natural(1, Note.Tone.F));

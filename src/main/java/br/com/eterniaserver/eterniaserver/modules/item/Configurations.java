@@ -148,8 +148,14 @@ final class Configurations {
             namespacedKeys[ItemsKeys.TAG_USAGES.ordinal()] = new NamespacedKey(
                     plugin, Constants.TAG_USAGES
             );
+            namespacedKeys[ItemsKeys.TAG_LOGIC_BEFORE.ordinal()] = new NamespacedKey(
+                    plugin, Constants.TAG_LOGIC_BEFORE
+            );
             namespacedKeys[ItemsKeys.TAG_RUN_COMMAND.ordinal()] = new NamespacedKey(
                     plugin, Constants.TAG_RUN_COMMAND
+            );
+            namespacedKeys[ItemsKeys.TAG_FAIL_COMMAND.ordinal()] = new NamespacedKey(
+                    plugin, Constants.TAG_FAIL_COMMAND
             );
         }
 

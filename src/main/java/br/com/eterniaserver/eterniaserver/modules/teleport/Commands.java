@@ -84,6 +84,11 @@ final class Commands {
         public void onWarp(Player player, String nome) {
             String warpName = nome.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
 
+            if (!player.hasPermission(plugin.getString(Strings.PERM_TELEPORT_PREFIX) + warpName)) {
+                EterniaLib.getChatCommons().sendMessage(player, Messages.SERVER_NO_PERM);
+                return;
+            }
+
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                 MessageOptions options = new MessageOptions(warpName);
                 if (warpService.teleportTo(player, warpName)) {

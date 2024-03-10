@@ -35,6 +35,12 @@ final class Services {
             this.plugin = plugin;
         }
 
+        protected void loadWarpNames() {
+            for (Entities.WarpLocation warpLocation : EterniaLib.getDatabase().listAll(Entities.WarpLocation.class)) {
+                warpNames.add(warpLocation.getName());
+            }
+        }
+
         protected void updateSpawnLocation() {
             spawnLocation = EterniaLib.getDatabase().get(Entities.WarpLocation.class, "spawn");
         }

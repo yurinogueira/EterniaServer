@@ -76,7 +76,7 @@ final class Configurations {
         @Override
         public void executeConfig() {
             addMessage(Messages.CHAT_TELL,
-                    "#555555[#DF9719TELL#555555] #00aaaa{2} #DF9719- #00aaaa{4}#555555: #DF9719{0}",
+                    "#555555[#DF9719TELL#555555] #00aaaa{2} #DF9719-> #00aaaa{4}#555555: #DF9719{0}",
                     "mensagem",
                     "nome do remetente",
                     "apelido do remetente",

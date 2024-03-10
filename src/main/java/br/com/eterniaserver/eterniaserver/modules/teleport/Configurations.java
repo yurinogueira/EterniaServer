@@ -344,6 +344,7 @@ final class Configurations {
             strings[Strings.PERM_HOME_COMPASS.ordinal()] = inFile.getString("permissions.home_compass", "eternia.home.compass");
             strings[Strings.PERM_SETHOME_LIMIT_PREFIX.ordinal()] = inFile.getString("permissions.sethome_limit_prefix", "eternia.sethome.limit.");
             strings[Strings.TELEPORT_TABLE_NAME_WARP.ordinal()] = inFile.getString("database.table_name_warp", "e_warp_location");
+            strings[Strings.PERM_TELEPORT_PREFIX.ordinal()] = inFile.getString("permissions.teleport_prefix", "eternia.warp.");
 
             integers[Integers.TELEPORT_TIMER.ordinal()] = inFile.getInt("teleport_timer", 5);
 
@@ -353,6 +354,7 @@ final class Configurations {
             outFile.set("permissions.home_compass", strings[Strings.PERM_HOME_COMPASS.ordinal()]);
             outFile.set("permissions.sethome_limit_prefix", strings[Strings.PERM_SETHOME_LIMIT_PREFIX.ordinal()]);
             outFile.set("database.table_name_warp", strings[Strings.TELEPORT_TABLE_NAME_WARP.ordinal()]);
+            outFile.set("permissions.teleport_prefix", strings[Strings.PERM_TELEPORT_PREFIX.ordinal()]);
 
             outFile.set("teleport_timer", integers[Integers.TELEPORT_TIMER.ordinal()]);
         }

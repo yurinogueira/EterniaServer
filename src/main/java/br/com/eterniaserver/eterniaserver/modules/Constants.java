@@ -95,8 +95,12 @@ public class Constants {
     public static final String TAG_COORD_Z = "eternia_z";
     public static final String TAG_COORD_YAW = "eternia_yaw";
     public static final String TAG_COORD_PITCH = "eternia_pitch";
+    public static final String TAG_LOGIC_BEFORE = "eternia_logic_before";
     public static final String TAG_RUN_COMMAND = "eternia_cmd";
+    public static final String TAG_FAIL_COMMAND = "eternia_fcmd";
     public static final String TAG_RUN_IN_CONSOLE = "eternia_rcmd";
     public static final String TAG_USAGES = "eternia_usages";
+
+    public static final int FUNCTION_CUSTOM_ITEM = 2;
 
 }

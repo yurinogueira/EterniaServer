@@ -2,6 +2,7 @@ package br.com.eterniaserver.eterniaserver.modules.item;
 
 import br.com.eterniaserver.eterniaserver.EterniaServer;
 import br.com.eterniaserver.eterniaserver.enums.ItemsKeys;
+import br.com.eterniaserver.eterniaserver.modules.Constants;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -44,7 +45,7 @@ final class Handlers implements Listener {
         PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
         if (container.has(plugin.getKey(ItemsKeys.TAG_FUNCTION), PersistentDataType.INTEGER)) {
             int function = container.getOrDefault(plugin.getKey(ItemsKeys.TAG_FUNCTION), PersistentDataType.INTEGER, 0);
-            if (function == 2) {
+            if (function == Constants.FUNCTION_CUSTOM_ITEM) {
                 return customFunction(player, itemStack);
             }
         }
@@ -70,6 +71,16 @@ final class Handlers implements Listener {
     private void executeCommands(Player player, ItemMeta itemMeta) {
         String commands = itemMeta.getPersistentDataContainer().getOrDefault(plugin.getKey(ItemsKeys.TAG_RUN_COMMAND), PersistentDataType.STRING, "");
         boolean runInConsole = itemMeta.getPersistentDataContainer().getOrDefault(plugin.getKey(ItemsKeys.TAG_RUN_IN_CONSOLE), PersistentDataType.INTEGER, 0) == 1;
+
+        String logic = itemMeta.getPersistentDataContainer().getOrDefault(plugin.getKey(ItemsKeys.TAG_LOGIC_BEFORE), PersistentDataType.STRING, "");
+        if (!Utils.executeLogic(plugin, player, logic)) {
+            String failCommands = itemMeta.getPersistentDataContainer().getOrDefault(plugin.getKey(ItemsKeys.TAG_FAIL_COMMAND), PersistentDataType.STRING, "");
+
+            for (String cmd : failCommands.split(";")) {
+                plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), plugin.setPlaceholders(player, cmd));
+            }
+            return;
+        }
 
         for (String cmd : commands.split(";")) {
             if (runInConsole) {
