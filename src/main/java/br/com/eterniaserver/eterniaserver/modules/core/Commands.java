@@ -180,6 +180,7 @@ final class Commands {
 
             if (sender instanceof Player player) {
                 player.getWorld().strikeLightning(player.getTargetBlock(null, 100).getLocation());
+                return;
             }
 
             EterniaLib.getChatCommons().sendMessage(sender, Messages.SERVER_NO_PLAYER);

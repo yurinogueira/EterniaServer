@@ -320,7 +320,8 @@ final class Services {
                 return sourceMessage;
             });
 
-            if (viewers.size() == 1) {
+            UUID playerUUID = player.getUniqueId();
+            if (viewers.stream().noneMatch(v -> v instanceof Player p && !p.getUniqueId().equals(playerUUID))) {
                 EterniaLib.getChatCommons().sendMessage(player, Messages.CHAT_NO_ONE_NEAR);
             }
         }

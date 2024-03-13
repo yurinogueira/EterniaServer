@@ -10,6 +10,7 @@ import br.com.eterniaserver.eterniaserver.enums.Integers;
 import br.com.eterniaserver.eterniaserver.modules.Constants;
 import br.com.eterniaserver.eterniaserver.modules.economy.Entities.BankMember;
 import br.com.eterniaserver.eterniaserver.modules.economy.Entities.BankBalance;
+import br.com.eterniaserver.eterniaserver.modules.core.Entities.PlayerProfile;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -46,6 +47,25 @@ final class Services {
         @Override
         public List<BalanceDTO> getBalanceTop() {
             return topBalances;
+        }
+
+        @Override
+        public String getBalanceTop(int position) {
+            if (topBalances.isEmpty() || position < 1 || position > topBalances.size()) {
+                return "";
+            }
+
+            BalanceDTO balanceDTO = topBalances.get(position - 1);
+            if (balanceDTO.playerUUID() == null) {
+                return "";
+            }
+
+            PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, balanceDTO.playerUUID());
+            if (playerProfile.getUuid() == null) {
+                return "";
+            }
+
+            return playerProfile.getPlayerName();
         }
 
         @Override

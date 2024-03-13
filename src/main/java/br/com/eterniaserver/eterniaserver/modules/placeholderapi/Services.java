@@ -81,78 +81,83 @@ final class Services {
                     return "";
                 }
 
-                int identifierId = getIdentifier(identifier);
-                UUID playerUuid = offlinePlayer.getUniqueId();
-
-                return switch (identifierId) {
-                    case 0,1,2,4,5,6 -> getFromPlayerProfile(identifierId, playerUuid);
-                    case 3 -> getFromCashBalance(identifierId, playerUuid);
-                    default -> plugin.getString(Strings.INVALID_PLACEHOLDER);
-                };
-            }
-
-            private int getIdentifier(String identifier) {
                 return switch (identifier.hashCode()) {
-                    case -690213213 -> 0; // register
-                    case -500526734 -> 1; // balance_top
-                    case 96486 -> 2; // afk
-                    case 3046195 -> 3; // cash
-                    case 3175821 -> 4; // glow
-                    case 197143583 -> 5; // godmode
-                    case 308210020 -> 6; // player_display
-                    default -> 12;
-                };
-            }
-
-            private String getFromCashBalance(int var4, UUID uuid) {
-                CashBalance cashBalance = EterniaLib.getDatabase().get(CashBalance.class, uuid);
-                if (cashBalance == null) {
-                    return "";
-                }
-
-                if (var4 == 3) {
-                    return getCashPlaceholder(cashBalance.getBalance());
-                }
-
-                return plugin.getString(Strings.INVALID_PLACEHOLDER);
-            }
-
-            private String getFromPlayerProfile(int var4, UUID uuid) {
-                PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, uuid);
-                if (playerProfile == null) {
-                    return "";
-                }
-
-                return switch (var4) {
-                    case 0 -> getFirstLoginPlaceholder(playerProfile.getFirstJoin().getTime());
-                    case 1 -> getBalanceTopPlaceholder(EterniaServer.getExtraEconomyAPI().isBalanceTop(uuid));
-                    case 2 -> getAFKPlaceholder(playerProfile.isAfk());
-                    case 4 -> playerProfile.getColor();
-                    case 5 -> getGodModePlaceholder(playerProfile.isGod());
-                    case 6 -> playerProfile.getPlayerDisplay();
+                    case -690213213 -> getFirstJoin(offlinePlayer.getUniqueId());       // register
+                    case -500526734 -> getBalanceTop(offlinePlayer.getUniqueId());      // balance_top
+                    case 96486 -> getAfk(offlinePlayer.getUniqueId());                  // afk
+                    case 3046195 -> getCash(offlinePlayer.getUniqueId());               // cash
+                    case 3175821 -> getGlow(offlinePlayer.getUniqueId());               // glow
+                    case 30148772 -> getBalanceTop(1);                          // balance_top_1
+                    case 30148773 -> getBalanceTop(2);                          // balance_top_2
+                    case 30148774 -> getBalanceTop(3);                          // balance_top_3
+                    case 197143583 -> getGodMode(offlinePlayer.getUniqueId());          // godmode
+                    case 308210020 -> getDisplay(offlinePlayer.getUniqueId());          // player_display
                     default -> plugin.getString(Strings.INVALID_PLACEHOLDER);
                 };
             }
 
+            private String getFirstJoin(UUID uuid) {
+                PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, uuid);
+                if (playerProfile.getFirstJoin() == null) {
+                    return "";
+                }
 
-            private String getFirstLoginPlaceholder(long firstLogin) {
-                return dateFormat.format(new Date(firstLogin));
+                return dateFormat.format(new Date(playerProfile.getFirstJoin().getTime()));
             }
 
-            private String getBalanceTopPlaceholder(boolean isBalanceTop) {
-                return isBalanceTop ? plugin.getString(Strings.BALANCE_TOP_TAG) : "";
+            private String getBalanceTop(UUID uuid) {
+                if (EterniaServer.getExtraEconomyAPI().isBalanceTop(uuid)) {
+                    return plugin.getString(Strings.BALANCE_TOP_TAG);
+                }
+
+                return "";
             }
 
-            public String getAFKPlaceholder(boolean isAfk) {
-                return isAfk ? plugin.getString(Strings.AFK_PLACEHOLDER) : "";
+            private String getAfk(UUID uuid) {
+                if (EterniaLib.getDatabase().get(PlayerProfile.class, uuid).isAfk()) {
+                    return plugin.getString(Strings.AFK_PLACEHOLDER);
+                }
+
+                return "";
             }
 
-            public String getGodModePlaceholder(boolean isGod) {
-                return isGod ? plugin.getString(Strings.GOD_PLACEHOLDER) : "";
+            private String getCash(UUID uuid) {
+                CashBalance cashBalance = EterniaLib.getDatabase().get(CashBalance.class, uuid);
+                if (cashBalance.getBalance() == null) {
+                    return "";
+                }
+
+                return String.valueOf(cashBalance.getBalance());
             }
 
-            public String getCashPlaceholder(int cash) {
-                return String.valueOf(cash);
+            private String getGlow(UUID uuid) {
+                PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, uuid);
+                if (playerProfile.getColor() == null) {
+                    return "";
+                }
+
+                return playerProfile.getColor();
+            }
+
+            private String getBalanceTop(int position) {
+                return EterniaServer.getExtraEconomyAPI().getBalanceTop(position);
+            }
+
+            private String getGodMode(UUID uuid) {
+                if (EterniaLib.getDatabase().get(PlayerProfile.class, uuid).isGod()) {
+                    return plugin.getString(Strings.GOD_PLACEHOLDER);
+                }
+
+                return "";
+            }
+
+            private String getDisplay(UUID uuid) {
+                PlayerProfile playerProfile = EterniaLib.getDatabase().get(PlayerProfile.class, uuid);
+                if (playerProfile.getPlayerDisplay() == null) {
+                    return "";
+                }
+
+                return playerProfile.getPlayerDisplay();
             }
         }
     }

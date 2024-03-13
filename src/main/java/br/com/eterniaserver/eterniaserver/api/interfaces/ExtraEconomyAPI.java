@@ -23,6 +23,13 @@ public interface ExtraEconomyAPI {
     List<BalanceDTO> getBalanceTop();
 
     /**
+     * Return the top {@param position} richest players.
+     * @param position the position of the top
+     * @return the name of the player
+     */
+    String getBalanceTop(int position);
+
+    /**
      * Get the list of banks.
      * @return the list of banks
      */
