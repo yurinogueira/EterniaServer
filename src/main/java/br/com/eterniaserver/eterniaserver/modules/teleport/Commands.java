@@ -360,7 +360,7 @@ final class Commands {
             List<HomeLocation> homes = homeService.getHomes(player.getUniqueId());
             Location location = player.getLocation();
 
-            MessageOptions options = new MessageOptions(String.valueOf(16));
+            MessageOptions options = new MessageOptions(nome);
             if (existHome(nome, homes)) {
                 for (HomeLocation home : homes) {
                     if (home.getName().equalsIgnoreCase(nome)) {
